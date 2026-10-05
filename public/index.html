@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Club Thirty</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/display.css">
+  <link rel="stylesheet" href="/css/control.css">
+</head>
+<body>
+  <nav id="tabs">
+    <div class="brand">CLUB<b>30</b></div>
+    <button data-tab="display" class="on">📺 TV Display</button>
+    <button data-tab="control">🎛️ Control Room</button>
+    <a href="/score" target="_blank" class="tablink">📱 Phone scorer</a>
+    <span class="spacer"></span>
+    <span id="conn" title="Connection to the tournament server">● Connected</span>
+    <button id="fs" title="Full screen the TV display (F)">⛶ Full screen</button>
+  </nav>
+
+  <section id="display" class="tab on"></section>
+  <section id="control" class="tab"></section>
+
+  <script src="/vendor/qrcode.js"></script>
+  <script src="/js/countries.js"></script>
+  <script src="/js/commentary.js"></script>
+  <script src="/js/common.js"></script>
+  <script src="/js/display.js"></script>
+  <script src="/js/control.js"></script>
+  <script>
+    (function () {
+      const path = location.pathname;
+      const only = path === '/display' ? 'display' : path === '/control' ? 'control' : null;
+      if (only === 'display') document.body.classList.add('tv-only');
+
+      function show(tab) {
+        document.querySelectorAll('#tabs [data-tab]').forEach((b) => b.classList.toggle('on', b.dataset.tab === tab));
+        document.querySelectorAll('.tab').forEach((s) => s.classList.toggle('on', s.id === tab));
+        document.body.dataset.tab = tab;
+        try { localStorage.setItem('c30-tab', tab); } catch (e) { /* ignore */ }
+        if (tab === 'display') Display.resize();
+      }
+      document.querySelectorAll('#tabs [data-tab]').forEach((b) => b.addEventListener('click', () => show(b.dataset.tab)));
+
+      let saved = null;
+      try { saved = localStorage.getItem('c30-tab'); } catch (e) { /* ignore */ }
+      show(only || saved || 'display');
+
+      function fullscreen() {
+        show('display');
+        const el = document.documentElement;
+        if (!document.fullscreenElement) (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+        else document.exitFullscreen();
+      }
+      document.getElementById('fs').addEventListener('click', fullscreen);
+      document.addEventListener('keydown', (e) => {
+        if (e.target.closest('input, textarea, select')) return;
+        if (e.key === 'f' || e.key === 'F') fullscreen();
+      });
+      document.addEventListener('fullscreenchange', () => {
+        document.body.classList.toggle('is-fs', !!document.fullscreenElement);
+        Display.resize();
+      });
+
+      // Stop the TV laptop going to sleep while the display is up.
+      let wake = null;
+      async function keepAwake() {
+        try {
+          if ('wakeLock' in navigator && document.visibilityState === 'visible' && !wake) {
+            wake = await navigator.wakeLock.request('screen');
+            wake.addEventListener('release', () => { wake = null; });
+          }
+        } catch (e) { /* not supported or not allowed: fine */ }
+      }
+      document.addEventListener('visibilitychange', keepAwake);
+      document.addEventListener('click', keepAwake);
+      keepAwake();
+
+      Display.init(document.getElementById('display'));
+      Control.init(document.getElementById('control'));
+      App.connect();
+    })();
+  </script>
+</body>
+</html>

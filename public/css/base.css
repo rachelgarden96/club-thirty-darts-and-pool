@@ -1,0 +1,98 @@
+@font-face { font-family: 'Barlow Condensed'; font-weight: 600; font-style: normal; src: url(/fonts/barlow-condensed-latin-600-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-weight: 600; font-style: italic; src: url(/fonts/barlow-condensed-latin-600-italic.woff2) format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-weight: 700; font-style: normal; src: url(/fonts/barlow-condensed-latin-700-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-weight: 700; font-style: italic; src: url(/fonts/barlow-condensed-latin-700-italic.woff2) format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-weight: 800; font-style: normal; src: url(/fonts/barlow-condensed-latin-800-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-weight: 800; font-style: italic; src: url(/fonts/barlow-condensed-latin-800-italic.woff2) format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-weight: 900; font-style: normal; src: url(/fonts/barlow-condensed-latin-900-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-weight: 900; font-style: italic; src: url(/fonts/barlow-condensed-latin-900-italic.woff2) format('woff2'); }
+
+:root {
+  --navy-0: #040a1f;
+  --navy-1: #0a1640;
+  --navy-2: #13235e;
+  --navy-3: #22377f;
+  --red: #e4002b;
+  --red-dk: #a8001f;
+  --yellow: #ffd400;
+  --white: #ffffff;
+  --muted: #9fb0dd;
+  --green: #19c37d;
+  --cond: 'Barlow Condensed', 'Arial Narrow', 'Roboto Condensed', Impact, sans-serif;
+  --ui: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--navy-0);
+  color: var(--white);
+  font-family: var(--ui);
+}
+button, input, select, textarea { font: inherit; }
+
+.flag {
+  display: inline-block;
+  width: 1.4em;
+  height: 1.05em;
+  object-fit: cover;
+  border-radius: 2px;
+  vertical-align: -0.15em;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .25);
+  flex: none;
+}
+.flag.noflag { background: repeating-linear-gradient(45deg, #334 0 4px, #445 4px 8px); }
+
+/* ---------- Tabs ---------- */
+#tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #050b24;
+  border-bottom: 2px solid var(--red);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+#tabs .brand { font-family: var(--cond); font-weight: 900; font-style: italic; font-size: 22px; margin-right: 12px; letter-spacing: .5px; }
+#tabs .brand b { color: var(--red); }
+#tabs button, #tabs .tablink {
+  background: var(--navy-2);
+  color: var(--white);
+  border: 0;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 14px;
+}
+#tabs button.on { background: var(--red); }
+#tabs .spacer { flex: 1; }
+#conn { font-size: 13px; color: var(--green); }
+#conn.down { color: var(--red); }
+#conn.down::after { content: ' — reconnecting…'; }
+
+.tab { display: none; }
+.tab.on { display: block; }
+
+body.tv-only #tabs, body.is-fs #tabs { display: none; }
+body[data-tab="display"] { overflow: hidden; }
+
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translate(-50%, 120px);
+  background: var(--green);
+  color: #002b18;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 700;
+  transition: transform .25s;
+  z-index: 100;
+  max-width: 90vw;
+}
+#toast.bad { background: var(--red); color: #fff; }
+#toast.show { transform: translate(-50%, 0); }
