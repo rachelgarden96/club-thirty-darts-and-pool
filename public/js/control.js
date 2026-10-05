@@ -97,6 +97,7 @@ window.Control = (function () {
         <td><input type="text" id="pn-${p.id}" data-ev="${ev.id}" data-pid="${p.id}" data-field="name" value="${esc(p.name)}"></td>
         <td><select id="pc-${p.id}" data-ev="${ev.id}" data-pid="${p.id}" data-field="country">${countryOptions(p.country)}</select></td>
         <td><input type="number" min="1" class="seed" id="ps-${p.id}" data-ev="${ev.id}" data-pid="${p.id}" data-field="seed" value="${p.seed || ''}" placeholder="–"></td>
+        <td><input type="text" id="pw-${p.id}" data-ev="${ev.id}" data-pid="${p.id}" data-field="walkon" value="${esc(p.walkon || '')}" placeholder="🎵 optional"></td>
         <td>${locked ? '' : `<button class="x" data-action="removePlayer" data-ev="${ev.id}" data-pid="${p.id}" title="Remove">✕</button>`}</td>
       </tr>`).join('');
     const venues = ev.venues.map((v) => `
@@ -113,6 +114,7 @@ window.Control = (function () {
         <input type="text" id="add-name-${ev.id}" placeholder="Full name" autocomplete="off">
         <select id="add-country-${ev.id}">${countryOptions(data.state.settings.homeCountry)}</select>
         <input type="number" min="1" id="add-seed-${ev.id}" class="seed" placeholder="Seed">
+        <input type="text" id="add-song-${ev.id}" class="song-in" placeholder="🎵 Walk-on song" autocomplete="off">
         <button class="btn primary">+ Add</button>
       </form>
       <div class="tools">
@@ -120,10 +122,10 @@ window.Control = (function () {
         ${other.players.length ? `<button class="btn small" data-action="copyPlayers" data-ev="${ev.id}">⇄ Copy ${other.players.length} players from ${esc(other.name)}</button>` : ''}
       </div>
       ${pasteOpen[ev.id] ? `<div class="paste">
-        <textarea id="paste-${ev.id}" rows="6" placeholder="One player per line:&#10;Jamie Smith, Scotland, 1&#10;Alex Jones, Wales&#10;Sam Taylor"></textarea>
+        <textarea id="paste-${ev.id}" rows="6" placeholder="One player per line: name, country, seed, walk-on song&#10;Jamie Smith, Scotland, 1, Mr Brightside&#10;Alex Jones, Wales, , Delilah&#10;Sam Taylor"></textarea>
         <button class="btn primary small" data-action="pastePlayers" data-ev="${ev.id}">Add these players</button>
       </div>` : ''}`}
-      ${ev.players.length ? `<table class="ptable"><thead><tr><th></th><th></th><th>Name</th><th>Country</th><th title="1 = top seed. Leave blank for unseeded.">Seed</th><th></th></tr></thead><tbody>${rows}</tbody></table>` : '<p class="muted">No players yet. Add them above.</p>'}
+      ${ev.players.length ? `<table class="ptable"><thead><tr><th></th><th></th><th>Name</th><th>Country</th><th title="1 = top seed. Leave blank for unseeded.">Seed</th><th>Walk-on song</th><th></th></tr></thead><tbody>${rows}</tbody></table>` : '<p class="muted">No players yet. Add them above.</p>'}
       ${dupSeeds ? '<div class="note warn">⚠️ Two players have the same seed number.</div>' : ''}
       <p class="hint">Seeds are optional: 1 is the top seed. Seeds 1 and 2 can only meet in the final, and top seeds get any byes.</p>
 
@@ -151,6 +153,12 @@ window.Control = (function () {
     return p ? esc(p.name) : 'TBC';
   }
 
+  function songsLine(ev, m) {
+    const songs = [m.p1, m.p2].map((id) => player(ev, id)).filter((p) => p && p.walkon)
+      .map((p) => `${esc(p.name.split(' ')[0])}: <b>${esc(p.walkon)}</b>`);
+    return songs.length ? `<div class="songs">🎵 ${songs.join(' · ')}</div>` : '';
+  }
+
   function scoreInputs(ev, m) {
     const k = `${ev.id}:${m.id}`;
     const d = scoreDraft[k] || parseScore(m.score) || ['', ''];
@@ -172,7 +180,7 @@ window.Control = (function () {
       const m = ev.matches.find((x) => x.status === 'playing' && x.venueId === v.id);
       const u = d.upNext.find((x) => x.venueId === v.id);
       const nx = u && u.nextId ? ev.matches.find((x) => x.id === u.nextId) : null;
-      const nextLine = nx ? `<div class="vnext">Next: ${pname(ev, nx.p1)} v ${pname(ev, nx.p2)}</div>` : '';
+      const nextLine = nx ? `<div class="vnext">Next: ${pname(ev, nx.p1)} v ${pname(ev, nx.p2)}${songsLine(ev, nx)}</div>` : '';
       if (!m) {
         return `<div class="vbox free"><div class="vtitle">${esc(v.name)} <span class="badge">FREE</span></div>
           ${ready.length ? `<div class="startrow"><select id="start-${v.id}">${ready.map((r) => `<option value="${r.id}">${pname(ev, r.p1)} v ${pname(ev, r.p2)}${r.hold ? ' (on hold)' : ''}</option>`).join('')}</select>
@@ -183,6 +191,7 @@ window.Control = (function () {
       return `<div class="vbox">
         <div class="vtitle">${esc(v.name)} <span class="badge live">LIVE</span> <span class="rd">${esc(d.roundNames[m.round])}</span></div>
         <div class="vplayers">${flag((player(ev, m.p1) || {}).country)} ${pname(ev, m.p1)} <i>v</i> ${flag((player(ev, m.p2) || {}).country)} ${pname(ev, m.p2)}</div>
+        ${songsLine(ev, m)}
         ${live && live.summary ? `<div class="livesum">📱 Phone scoring: ${esc(live.summary.p1)} – ${esc(live.summary.p2)} ${esc(live.summary.text || '')}</div>` : ''}
         <div class="who-won">Who won? ${winButtons(ev, m)}</div>
         <div class="vfoot"><button class="link" data-action="hold" data-ev="${ev.id}" data-mid="${m.id}">⏸ Not ready, send back to queue</button></div>
@@ -260,10 +269,13 @@ window.Control = (function () {
     return `<div class="cols">
       <div class="card">
         <h2>📺 The show</h2>
-        <label>Tournament title<input type="text" id="set-title" data-set="title" value="${esc(s.title)}"></label>
-        <label>Subtitle<input type="text" id="set-subtitle" data-set="subtitle" value="${esc(s.subtitle)}"></label>
+        <label>Strapline on the TV<input type="text" id="set-subtitle" data-set="subtitle" value="${esc(s.subtitle)}"></label>
         <label>Birthday star's name <small>(gets special commentary)</small><input type="text" id="set-host" data-set="hostName" value="${esc(s.hostName)}" placeholder="e.g. Rachel"></label>
         <label>Home nation <small>(for "wins in front of a home crowd")</small><select id="set-home" data-set="homeCountry">${countryOptions(s.homeCountry)}</select></label>
+        <label>TV colour theme<select id="set-theme" data-set="theme">
+          <option value="light" ${s.theme !== 'dark' ? 'selected' : ''}>Light: cream &amp; blush, like the logo</option>
+          <option value="dark" ${s.theme === 'dark' ? 'selected' : ''}>Dark: deep wine, for a dim room</option>
+        </select></label>
         <label>Seconds per slide<input type="number" min="3" max="120" id="set-secs" data-set="slideSeconds" value="${s.slideSeconds}"></label>
         <h3>Slides to show</h3>
         ${Object.entries(slideNames).map(([k, l]) => `<label class="check"><input type="checkbox" data-slide="${k}" ${s.slides[k] ? 'checked' : ''}> ${l}</label>`).join('')}
@@ -305,12 +317,16 @@ window.Control = (function () {
       const parts = line.split(/[,\t]/).map((x) => x.trim());
       let country = '';
       let seed = null;
+      const song = [];
       for (const part of parts.slice(1)) {
-        if (/^\d+$/.test(part)) seed = Number(part);
-        else if (byName[part.toLowerCase()]) country = byName[part.toLowerCase()];
-        else if (Countries.COUNTRIES.some((c) => c[0] === part.toLowerCase())) country = part.toLowerCase();
+        if (!part) continue;
+        if (/^\d+$/.test(part) && seed === null && !song.length) seed = Number(part);
+        else if (!country && !song.length && byName[part.toLowerCase()]) country = byName[part.toLowerCase()];
+        else if (!country && !song.length && Countries.COUNTRIES.some((c) => c[0] === part.toLowerCase())) country = part.toLowerCase();
+        else song.push(part);
       }
-      return { name: parts[0], country: country || data.state.settings.homeCountry, seed };
+      // Anything that isn't a country or seed is the walk-on song (commas allowed).
+      return { name: parts[0], country: country || data.state.settings.homeCountry, seed, walkon: song.join(', ') };
     });
   }
 
@@ -325,10 +341,12 @@ window.Control = (function () {
       if (ev.players.some((p) => p.name.toLowerCase() === name.toLowerCase())) return toast(`${name} is already in the ${ev.name}.`, true);
       const country = document.getElementById(`add-country-${ev.id}`).value;
       const seedEl = document.getElementById(`add-seed-${ev.id}`);
-      const ok = await savePlayers(ev, ev.players.concat([{ name, country, seed: seedEl.value }]));
+      const songEl = document.getElementById(`add-song-${ev.id}`);
+      const ok = await savePlayers(ev, ev.players.concat([{ name, country, seed: seedEl.value, walkon: songEl.value }]));
       if (ok) {
         nameEl.value = '';
         seedEl.value = '';
+        songEl.value = '';
         nameEl.focus();
         // Show the new player straight away even though the name box keeps focus.
         if (pending) { pending = false; render(); }
@@ -403,7 +421,7 @@ window.Control = (function () {
     } else if (a === 'copyPlayers') {
       const other = ev.id === 'pool' ? data.state.events.darts : data.state.events.pool;
       const have = new Set(ev.players.map((p) => p.name.toLowerCase()));
-      const add = other.players.filter((p) => !have.has(p.name.toLowerCase())).map((p) => ({ name: p.name, country: p.country, seed: null }));
+      const add = other.players.filter((p) => !have.has(p.name.toLowerCase())).map((p) => ({ name: p.name, country: p.country, seed: null, walkon: p.walkon || '' }));
       if (await savePlayers(ev, ev.players.concat(add))) toast(`Copied ${add.length} players (seeds not copied)`);
     } else if (a === 'addVenue') {
       await act('setVenues', { eventId: ev.id, venues: ev.venues.concat([{ name: `${ev.venueLabel} ${ev.venues.length + 1}` }]) });

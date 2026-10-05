@@ -1,8 +1,8 @@
 # 🎯🎱 Club Thirty: Darts & Pool Championship
 
-A live tournament system for a birthday darts and pool night. It runs on one laptop plugged into the TV:
+A live tournament system for the Club Thirty darts and pool championships. It runs on one laptop plugged into the TV:
 
-- **📺 TV Display**: slides that rotate every 10 seconds, styled like a Sky Sports parody, with a scrolling ticker of commentary, results and fake odds.
+- **📺 TV Display**: slides that rotate every 10 seconds, styled like a Sky Sports parody, in the Club Thirty colours, with a scrolling ticker of commentary, results and fake odds.
 - **🎛️ Control Room**: add players (with flags and seeds), tables and oches, make the draw, and enter who won.
 - **📱 Phone Scorer**: guests scan a QR code on the TV to keep score. It's a darts counter for 180, 301 and 501 (singles, doubles, trebles and bulls) plus a pool frame counter. When the game ends, the winner goes straight into the bracket.
 
@@ -27,12 +27,13 @@ Everything is saved to disk the moment it changes, so nothing is lost if the bro
 In **🎛️ Control Room → 1. Players & tables**, for both Pool and Darts:
 
 1. **Add players** with their full name, country and an optional seed (1 = top seed). Seeds 1 and 2 can only meet in the final, and the top seeds get any byes.
-   - **📋 Paste a list** accepts one player per line, e.g. `Jamie Smith, Scotland, 1`
+   - Add their **walk-on song** too, if they've chosen one. It appears under their name on the *Up Next* and *Now Playing* slides, gets a "WALK-ON WATCH" ticker line, and shows in the Control Room so whoever's on music duty can cue it. (No sound is played by the app.)
+   - **📋 Paste a list** accepts one player per line, e.g. `Jamie Smith, Scotland, 1, Mr Brightside` (seed and song are optional)
    - **⇄ Copy players** copies the players from the other event.
 2. **Add tables and oches**, and rename them however you like ("The Big Table", "Oche by the Bar"…).
 3. Click **🎲 Make the draw**. Any player count works; odd numbers get byes automatically.
 
-In **⚙️ Settings & backup**, set the **birthday star's name** (for special commentary) and the **home nation** (for "wins in front of a home crowd!" lines).
+In **⚙️ Settings & backup**, pick the **TV colour theme** (*Light*: cream and blush like the logo, or *Dark*: deep wine for a dim room), set the **birthday star's name** (for special commentary) and the **home nation** (for "wins in front of a home crowd!" lines).
 
 ## On the night
 
@@ -86,9 +87,13 @@ The remaining scores show live on the TV's *Now Playing* slide. If a phone dies,
 | Port 3030 is in use | Start with a different port: `PORT=4000 npm start` (Mac) or `set PORT=4000 && node server.js` (Windows). |
 | Laptop goes to sleep | The display asks the browser to keep the screen awake, but it's also worth turning off sleep in your power settings for the night. |
 
+## Branding
+
+The Club Thirty logos and palette (deep rose `#A84D68`, deep sage `#5E7A55`, blush `#F2B8C6`, rose `#D98A9E`, sage `#A7C4A0`, gold `#CDA85A`) are used throughout. The original logo files are in `branding/`. The transparent versions in `public/img/` (one set for light backgrounds, one for dark) were cut from them. The colours are defined once at the top of `public/css/base.css`.
+
 ## For developers
 
 - No dependencies: `node server.js` and that's it. Requires Node 18+.
 - `npm test` runs the bracket engine tests.
 - `lib/tournament.js` handles bracket generation, seeding, results, undo and scheduling. `lib/store.js` handles persistence. `public/js/commentary.js` holds the commentary lines and odds.
-- Third-party assets: [flag-icons](https://github.com/lipis/flag-icons) (MIT), [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) (MIT), and [Barlow Condensed](https://fonts.google.com/specimen/Barlow+Condensed) (OFL).
+- Third-party assets: [flag-icons](https://github.com/lipis/flag-icons) (MIT), [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) (MIT), plus [Montserrat](https://fonts.google.com/specimen/Montserrat) and [Barlow Condensed](https://fonts.google.com/specimen/Barlow+Condensed) (OFL).

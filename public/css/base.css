@@ -6,27 +6,80 @@
 @font-face { font-family: 'Barlow Condensed'; font-weight: 800; font-style: italic; src: url(/fonts/barlow-condensed-latin-800-italic.woff2) format('woff2'); }
 @font-face { font-family: 'Barlow Condensed'; font-weight: 900; font-style: normal; src: url(/fonts/barlow-condensed-latin-900-normal.woff2) format('woff2'); }
 @font-face { font-family: 'Barlow Condensed'; font-weight: 900; font-style: italic; src: url(/fonts/barlow-condensed-latin-900-italic.woff2) format('woff2'); }
+@font-face { font-family: 'Montserrat'; font-weight: 500; src: url(/fonts/montserrat-latin-500-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Montserrat'; font-weight: 600; src: url(/fonts/montserrat-latin-600-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Montserrat'; font-weight: 700; src: url(/fonts/montserrat-latin-700-normal.woff2) format('woff2'); }
 
+/* Club Thirty brand palette */
 :root {
-  --navy-0: #040a1f;
-  --navy-1: #0a1640;
-  --navy-2: #13235e;
-  --navy-3: #22377f;
-  --red: #e4002b;
-  --red-dk: #a8001f;
-  --yellow: #ffd400;
-  --white: #ffffff;
-  --muted: #9fb0dd;
-  --green: #19c37d;
+  --deep-rose: #a84d68;
+  --deep-sage: #5e7a55;
+  --blush: #f2b8c6;
+  --rose: #d98a9e;
+  --sage: #a7c4a0;
+  --gold: #cda85a;
+
   --cond: 'Barlow Condensed', 'Arial Narrow', 'Roboto Condensed', Impact, sans-serif;
+  --brand: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
   --ui: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
+
+/* Light theme (default): the logo's own look, cream and blush. */
+:root, .theme-light {
+  --bg: #fbf4f1;
+  --bg-2: #f5e3e7;
+  --panel: #ffffff;
+  --panel-2: #fcf0f2;
+  --line: rgba(168, 77, 104, .18);
+  --line-2: rgba(168, 77, 104, .35);
+  --ink: #4a2232;
+  --ink-soft: #8d6170;
+  --accent: var(--deep-rose);
+  --on-accent: #ffffff;
+  --accent-2: var(--deep-sage);
+  --on-accent-2: #ffffff;
+  --hi: var(--gold);
+  --on-hi: #3a2a0c;
+  --hi-text: #a57f2c;
+  --win: var(--deep-sage);
+  --win-bg: rgba(167, 196, 160, .35);
+  --field: #ffffff;
+  --logo-ink: block;
+  --logo-light: none;
+}
+
+/* Dark theme: deep wine, for a dimly lit room. */
+.theme-dark {
+  --bg: #2c1420;
+  --bg-2: #1c0b13;
+  --panel: #3d1c2b;
+  --panel-2: #4a2434;
+  --line: rgba(242, 184, 198, .16);
+  --line-2: rgba(242, 184, 198, .35);
+  --ink: #fbeef1;
+  --ink-soft: #d9a9b6;
+  --accent: var(--deep-rose);
+  --on-accent: #ffffff;
+  --accent-2: var(--deep-sage);
+  --on-accent-2: #ffffff;
+  --hi: var(--gold);
+  --on-hi: #2c1d05;
+  --hi-text: var(--gold);
+  --win: var(--sage);
+  --win-bg: rgba(167, 196, 160, .16);
+  --field: #2c1420;
+  --logo-ink: none;
+  --logo-light: block;
+}
+
+.logo-ink { display: var(--logo-ink); }
+.logo-light { display: var(--logo-light); }
 
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; }
 body {
-  background: var(--navy-0);
-  color: var(--white);
+  background: var(--bg);
+  color: var(--ink);
   font-family: var(--ui);
 }
 button, input, select, textarea { font: inherit; }
@@ -38,10 +91,10 @@ button, input, select, textarea { font: inherit; }
   object-fit: cover;
   border-radius: 2px;
   vertical-align: -0.15em;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, .25);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .12);
   flex: none;
 }
-.flag.noflag { background: repeating-linear-gradient(45deg, #334 0 4px, #445 4px 8px); }
+.flag.noflag { background: repeating-linear-gradient(45deg, rgba(168, 77, 104, .15) 0 4px, rgba(168, 77, 104, .3) 4px 8px); }
 
 /* ---------- Tabs ---------- */
 #tabs {
@@ -49,18 +102,18 @@ button, input, select, textarea { font: inherit; }
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: #050b24;
-  border-bottom: 2px solid var(--red);
+  background: var(--panel);
+  border-bottom: 3px solid var(--deep-rose);
   position: sticky;
   top: 0;
   z-index: 50;
 }
-#tabs .brand { font-family: var(--cond); font-weight: 900; font-style: italic; font-size: 22px; margin-right: 12px; letter-spacing: .5px; }
-#tabs .brand b { color: var(--red); }
+#tabs .brand { height: 34px; margin-right: 10px; }
+#tabs .brand img { height: 100%; }
 #tabs button, #tabs .tablink {
-  background: var(--navy-2);
-  color: var(--white);
-  border: 0;
+  background: var(--panel-2);
+  color: var(--ink);
+  border: 1px solid var(--line);
   padding: 8px 14px;
   border-radius: 6px;
   cursor: pointer;
@@ -68,10 +121,10 @@ button, input, select, textarea { font: inherit; }
   text-decoration: none;
   font-size: 14px;
 }
-#tabs button.on { background: var(--red); }
+#tabs button.on { background: var(--deep-rose); border-color: var(--deep-rose); color: #fff; }
 #tabs .spacer { flex: 1; }
-#conn { font-size: 13px; color: var(--green); }
-#conn.down { color: var(--red); }
+#conn { font-size: 13px; color: var(--deep-sage); font-weight: 600; }
+#conn.down { color: var(--deep-rose); }
 #conn.down::after { content: ' — reconnecting…'; }
 
 .tab { display: none; }
@@ -85,14 +138,15 @@ body[data-tab="display"] { overflow: hidden; }
   left: 50%;
   bottom: 24px;
   transform: translate(-50%, 120px);
-  background: var(--green);
-  color: #002b18;
+  background: var(--deep-sage);
+  color: #fff;
   padding: 12px 20px;
   border-radius: 8px;
   font-weight: 700;
   transition: transform .25s;
   z-index: 100;
   max-width: 90vw;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
 }
-#toast.bad { background: var(--red); color: #fff; }
+#toast.bad { background: var(--deep-rose); }
 #toast.show { transform: translate(-50%, 0); }

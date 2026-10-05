@@ -306,7 +306,7 @@
       </div>
       <div class="pad-grid">${nums.join('')}</div>
       <div class="pad-extra">
-        <button class="ex" data-b="25">25<small>outer bull</small></button>
+        <button class="ex outer" data-b="25">25<small>outer bull</small></button>
         <button class="ex bull" data-b="50">BULL<small>50</small></button>
         <button class="ex miss" data-b="0">MISS<small>0</small></button>
         <button class="ex undo" id="undo">↶ UNDO</button>

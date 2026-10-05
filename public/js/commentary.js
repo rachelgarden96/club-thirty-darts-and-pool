@@ -248,6 +248,17 @@
       for (const u of d.upNext) {
         const cur = ev.matches.find((m) => m.id === u.currentId);
         const venue = ev.venues.find((v) => v.id === u.venueId);
+        const nx = ev.matches.find((m) => m.id === u.nextId);
+        for (const pid of nx ? [nx.p1, nx.p2] : []) {
+          const p = player(ev, pid);
+          if (p && p.walkon) {
+            lines.push(fill(pick([
+              'WALK-ON WATCH: {N} will be entering the {V} arena to "{S}". Bold choice.',
+              'WALK-ON WATCH: "{S}" means {N} is on next at {V}. The crowd is warming up its vocal cords.',
+              '{P}: "When "{S}" comes on, that\'s {F} saying: I am here and I am ready."',
+            ]), { N: p.name, F: firstName(p), S: p.walkon, V: venue.name, P: pick(PUNDITS) }));
+          }
+        }
         if (cur) {
           const live = state.live[`${ev.id}:${cur.id}`];
           let extra = '';

@@ -17,8 +17,9 @@ window.Display = (function () {
     root.innerHTML = `
       <div class="stage">
         <header class="tv-top">
-          <div class="logo"><span class="c30">CLUB<b>30</b></span><span class="sports">SPORTS</span></div>
-          <div class="tv-title"><div class="t"></div><div class="s"></div></div>
+          <div class="club">${logo('club-thirty')}</div>
+          <div class="sports-bug">SPORTS</div>
+          <div class="tv-title"><div class="t"></div></div>
           <div class="live-bug"><i></i>LIVE</div>
           <div class="clock"></div>
         </header>
@@ -75,8 +76,8 @@ window.Display = (function () {
   function update(p) {
     data = p;
     const s = p.state.settings;
-    root.querySelector('.tv-title .t').textContent = s.title || 'Club Thirty';
-    root.querySelector('.tv-title .s').textContent = s.subtitle || '';
+    root.querySelector('.tv-title .t').textContent = s.subtitle || '';
+    stage.classList.toggle('theme-dark', s.theme === 'dark');
     document.title = `${s.title || 'Club Thirty'} — Live`;
 
     // New headlines → lower-third flash.
@@ -165,14 +166,23 @@ window.Display = (function () {
     const v = ev.venues.find((x) => x.id === vid);
     return v ? esc(v.name) : '';
   }
+  // Brand artwork comes in an ink version (light theme) and a light version (dark theme).
+  function logo(name) {
+    return `<img class="logo-ink" src="/img/${name}.png" alt=""><img class="logo-light" src="/img/${name}-light.png" alt="">`;
+  }
+  function eventLogo(ev) {
+    return `<span class="event-logo">${logo(`${ev.id}-championship`)}</span>`;
+  }
+  function song(ev, id) {
+    const p = player(ev, id);
+    return p && p.walkon ? `<div class="song">🎵 ${esc(p.walkon)}</div>` : '';
+  }
   function head(title, chips) {
+    if (title.startsWith('<span class="event-logo"')) return `<div class="slide-head">${title}${(chips || []).join('')}</div>`;
     return `<div class="slide-head"><h1>${title}</h1>${(chips || []).join('')}</div>`;
   }
   function liveFor(ev, m) {
     return data.state.live[`${ev.id}:${m.id}`] || null;
-  }
-  function icon(ev) {
-    return ev.id === 'pool' ? '🎱' : '🎯';
   }
 
   // ------------------------------------------------------------ bracket
@@ -181,7 +191,7 @@ window.Display = (function () {
     const d = data.derived[evId];
     const chips = [`<span class="chip">${esc(d.champion ? 'Complete' : d.currentRoundName)}</span>`,
       `<span class="chip ghost">${d.remaining} of ${ev.players.length} still standing</span>`];
-    return head(`${icon(ev)} ${esc(ev.name)} <em>Bracket</em>`, chips) + `
+    return head(eventLogo(ev), chips) + `
       <div class="slide-body"><div class="bracket-wrap">
         <div class="bracket-area"><div class="bracket-fit">${bracketHtml(ev, d, false)}</div><div class="bracket-fit alt" style="display:none">${bracketHtml(ev, d, true)}</div></div>
         ${standingsHtml(ev, d)}
@@ -309,12 +319,14 @@ window.Display = (function () {
         return `<div class="vcard ${ev.venues.length > 3 ? 'compact' : ''}">
           <div class="vh"><span class="vn">${esc(v.name)}</span><span class="vr">${esc(d.roundNames[m.round])}</span>${s ? '<span class="vl">LIVE SCORE</span>' : ''}</div>
           <div class="vs-line">${who(ev, m.p1)}${sc(0)}</div>
+          ${song(ev, m.p1)}
           <div class="vs-sep">VS</div>
           <div class="vs-line">${who(ev, m.p2)}${sc(1)}</div>
+          ${song(ev, m.p2)}
           ${s && s.text ? `<div class="lsum">${esc(s.text)}</div>` : ''}
         </div>`;
       }).join('');
-      return `<div class="panel"><div class="panel-h">${icon(ev)} ${esc(ev.name)}<span class="rd">${esc(d.champion ? 'Complete' : d.currentRoundName)}</span></div>
+      return `<div class="panel"><div class="panel-h">${eventLogo(ev)}<span class="rd">${esc(d.champion ? 'Complete' : d.currentRoundName)}</span></div>
         <div class="vgrid" style="${gridStyle(ev.venues.length)}">${cards}</div></div>`;
     }).join('');
     return head('Now <em>Playing</em>', ['<span class="chip">Live</span>']) + `<div class="slide-body"><div class="two-up">${panels}</div></div>`;
@@ -345,8 +357,10 @@ window.Display = (function () {
         return `<div class="vcard upcard ${ev.venues.length > 3 ? 'compact' : ''}">
           <div class="vh"><span class="vn">${esc(v.name)} · Next up</span><span class="vr">${esc(d.roundNames[m.round])}</span></div>
           <div class="vs-line">${sideLabel(ev, m, 'p1')}</div>
+          ${song(ev, m.p1)}
           <div class="vs-sep">VS</div>
           <div class="vs-line">${sideLabel(ev, m, 'p2')}</div>
+          ${song(ev, m.p2)}
           <div class="after">${cur ? `After ${nm(ev, cur.p1)} v ${nm(ev, cur.p2)}` : 'Head to the ' + esc(ev.venueLabel.toLowerCase()) + ' now!'}</div>
         </div>`;
       }).join('');
@@ -354,11 +368,11 @@ window.Display = (function () {
         const m = ev.matches.find((x) => x.id === id);
         return `<b>${nm(ev, m.p1)}</b> v <b>${nm(ev, m.p2)}</b>`;
       });
-      return `<div class="panel"><div class="panel-h">${icon(ev)} ${esc(ev.name)}<span class="rd">Get chalked up!</span></div>
+      return `<div class="panel"><div class="panel-h">${eventLogo(ev)}<span class="rd">${ev.id === 'pool' ? 'Get chalked up!' : 'Warm up those arms!'}</span></div>
         <div class="vgrid" style="${gridStyle(ev.venues.length)}">${cards}</div>
         ${later.length ? `<div class="later">Then: ${later.join(' · ')}</div>` : ''}</div>`;
     }).join('');
-    return head('Up <em>Next</em>', ['<span class="chip y">You\'re on soon!</span>']) + `<div class="slide-body"><div class="two-up">${panels}</div></div>`;
+    return head('Up <em>Next</em>', ['<span class="chip y">You\'re on soon!</span>', '<span class="chip ghost">🎵 Cue the walk-on music</span>']) + `<div class="slide-body"><div class="two-up">${panels}</div></div>`;
   }
 
   // ------------------------------------------------------------ qr
@@ -406,11 +420,11 @@ window.Display = (function () {
   // ------------------------------------------------------------ welcome / champion
   function slideWelcome() {
     const s = data.state.settings;
-    return `<div class="slide-body"><div class="centre">
-      <div class="big">${esc(s.title || 'Club Thirty')}</div>
-      <div class="mid">${esc(s.subtitle || '')}</div>
-      ${s.hostName ? `<div class="small">🎉 Happy 30th ${esc(s.hostName)} 🎉</div>` : ''}
-      <div class="small">The draw is being made. Stay tuned.</div>
+    return `<div class="slide-body"><div class="centre welcome">
+      <div class="club">${logo('club-thirty')}</div>
+      <div class="lines"><span>${logo('pool-championship')}</span><i class="dot">◆</i><span>${logo('darts-championship')}</span></div>
+      ${s.hostName ? `<div class="small host">Happy 30th ${esc(s.hostName)}</div>` : ''}
+      <div class="small">The draw is being made · Stay tuned</div>
     </div></div>`;
   }
 
@@ -419,11 +433,12 @@ window.Display = (function () {
     const d = data.derived[evId];
     const c = player(ev, d.champion);
     const r = player(ev, d.runnerUp);
-    const colours = ['#e4002b', '#ffd400', '#ffffff', '#3d7bff', '#19c37d'];
-    const conf = Array.from({ length: 70 }, (_, i) => `<i style="left:${(i * 137) % 100}%;background:${colours[i % 5]};animation-duration:${3 + (i % 7) * 0.6}s;animation-delay:${-(i % 11) * 0.5}s"></i>`).join('');
+    const colours = ['#a84d68', '#5e7a55', '#f2b8c6', '#d98a9e', '#a7c4a0', '#cda85a'];
+    const conf = Array.from({ length: 70 }, (_, i) => `<i style="left:${(i * 137) % 100}%;animation-duration:${3 + (i % 7) * 0.6}s;background:${colours[i % 6]};animation-delay:${-(i % 11) * 0.5}s"></i>`).join('');
     return `<div class="slide-body"><div class="confetti">${conf}</div><div class="centre champ">
       <div class="cup">🏆</div>
-      <div class="ttl">${esc(ev.name)} Champion</div>
+      <div class="ev">${logo(`${ev.id}-championship`)}</div>
+      <div class="ttl">Champion</div>
       <div class="who">${flag(c.country)}<span>${esc(c.name)}</span></div>
       <div class="small">Beat ${r ? esc(r.name) : ''} in the final · ${esc(Countries.name(c.country) || '')} goes wild</div>
     </div></div>`;

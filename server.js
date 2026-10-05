@@ -74,6 +74,7 @@ function cleanPlayers(list) {
       name: String(p.name).trim().slice(0, 40),
       country: String(p.country || '').slice(0, 10),
       seed: Number(p.seed) > 0 ? Math.floor(Number(p.seed)) : null,
+      walkon: String(p.walkon || '').trim().slice(0, 80),
     }));
 }
 
@@ -82,7 +83,7 @@ function cleanPlayers(list) {
 const actions = {
   saveSettings(a) {
     const s = state.settings;
-    for (const k of ['title', 'subtitle', 'hostName', 'homeCountry', 'publicUrl']) {
+    for (const k of ['title', 'subtitle', 'hostName', 'homeCountry', 'publicUrl', 'theme']) {
       if (typeof a.settings[k] === 'string') s[k] = a.settings[k].slice(0, 120);
     }
     if (a.settings.slideSeconds) s.slideSeconds = Math.min(120, Math.max(3, Number(a.settings.slideSeconds) || 10));
@@ -97,7 +98,7 @@ const actions = {
       // After the draw, only names/countries/seeds of existing players may change.
       for (const p of players) {
         const cur = e.players.find((x) => x.id === p.id);
-        if (cur) Object.assign(cur, { name: p.name, country: p.country, seed: p.seed });
+        if (cur) Object.assign(cur, { name: p.name, country: p.country, seed: p.seed, walkon: p.walkon });
       }
       return;
     }
