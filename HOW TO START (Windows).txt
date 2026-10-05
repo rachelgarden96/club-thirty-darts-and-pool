@@ -1,0 +1,29 @@
+CLUB THIRTY - HOW TO START IT (WINDOWS)
+=======================================
+
+You only need to do steps 1 and 2 once.
+
+1. Install Node.js from https://nodejs.org (the "LTS" version).
+
+2. Unzip this folder: right-click the zip file > "Extract All..." > "Extract".
+   Use the unzipped folder from now on, not the zip.
+
+3. In the unzipped folder, double-click "start-windows.bat".
+
+   - If a blue box says "Windows protected your PC":
+     click "More info", then "Run anyway".
+   - If Windows Firewall asks about Node.js:
+     tick "Private networks" and click "Allow".
+
+4. A black window opens, then your web browser opens on the Club Thirty
+   screen. If the browser doesn't open, type this into it:
+   http://localhost:3030
+
+5. LEAVE THE BLACK WINDOW OPEN ALL NIGHT. You can minimise it, but if
+   you close it, the app stops.
+
+To stop it at the end of the night: close the black window.
+To start it again later: double-click "start-windows.bat" again.
+Everything is saved, so it carries on exactly where you left off.
+
+Phones scanning the QR code must be on the same Wi-Fi as this laptop.
