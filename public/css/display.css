@@ -481,3 +481,32 @@ body.tv-only #display, body.is-fs #display { height: 100vh; }
 .confetti { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
 .confetti i { position: absolute; top: -30px; width: 16px; height: 26px; animation: fall linear infinite; }
 @keyframes fall { to { transform: translateY(1000px) rotate(720deg); } }
+
+/* pool countdown on Now Playing */
+.vcard .vl.timer { background: var(--deep-sage); font-variant-numeric: tabular-nums; font-size: 20px; }
+.vcard .vl.timer.low { background: var(--deep-rose); animation: blink 1s infinite; }
+
+/* ---------- Post-match interviews ---------- */
+.qgrid { display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 1fr; gap: 22px; height: 100%; }
+.qgrid.n1 { grid-template-columns: 1fr; }
+.qgrid.n2, .qgrid.n4 { grid-template-columns: repeat(2, 1fr); }
+.qcard {
+  background: var(--panel);
+  border: 2px solid var(--line);
+  border-left: 10px solid var(--deep-rose);
+  border-radius: 8px;
+  padding: 20px 26px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(74, 34, 50, .07);
+}
+.qcard.loser { border-left-color: var(--sage); }
+.qtag { font-family: var(--brand); font-size: 18px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--deep-sage); }
+.stage.theme-dark .qtag { color: var(--sage); }
+.qcard .qq { flex: 1; display: flex; align-items: center; font-size: 46px; font-weight: 700; font-style: italic; line-height: 1.1; margin: 10px 0; }
+.qgrid.n1 .qq { font-size: 76px; }
+.qgrid.n2 .qq { font-size: 58px; }
+.qwho { display: flex; align-items: center; gap: 12px; font-size: 32px; font-weight: 800; color: var(--deep-rose); text-transform: uppercase; }
+.stage.theme-dark .qwho { color: var(--blush); }

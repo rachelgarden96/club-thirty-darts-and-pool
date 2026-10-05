@@ -81,7 +81,32 @@ window.Control = (function () {
 
   // ------------------------------------------------------------ setup
   function renderSetup() {
-    return `<div class="cols">${['pool', 'darts'].map((k) => setupEvent(data.state.events[k])).join('')}</div>`;
+    return `<div class="cols">${['pool', 'darts'].map((k) => setupEvent(data.state.events[k])).join('')}</div>${relationshipsCard()}`;
+  }
+
+  // Couples, siblings, best mates… used by the commentary for extra banter.
+  function relationshipsCard() {
+    const names = [];
+    const seen = new Set();
+    for (const ev of Object.values(data.state.events)) {
+      for (const p of ev.players) {
+        const k = p.name.trim().toLowerCase();
+        if (!seen.has(k)) { seen.add(k); names.push(p.name.trim()); }
+      }
+    }
+    names.sort((a, b) => a.localeCompare(b));
+    const rels = data.state.relationships || [];
+    const label = Object.fromEntries(Commentary.RELATIONSHIP_TYPES);
+    const opts = (id) => `<select id="${id}"><option value="">— Player —</option>${names.map((n) => `<option>${esc(n)}</option>`).join('')}</select>`;
+    return `<div class="card rel-card">
+      <h2>💞 Relationships &amp; rivalries <span class="count">optional, for the commentary</span></h2>
+      <p class="muted">Tell the pundits who's who. When these players meet (or are on a collision course) the ticker will make the most of it. Very respectfully. Mostly.</p>
+      ${names.length < 2 ? '<p class="muted">Add some players first.</p>' : `
+      <div class="relrow">${opts('rel-a')}
+        <select id="rel-type">${Commentary.RELATIONSHIP_TYPES.map(([k, l]) => `<option value="${k}">${esc(l)}</option>`).join('')}</select>
+        ${opts('rel-b')}<button class="btn primary" data-action="addRel">+ Add</button></div>`}
+      ${rels.length ? `<div class="rels">${rels.map((r) => `<span class="rel">${esc(r.a)} <i>${esc(label[r.type] || r.type)}</i> ${esc(r.b)}<button class="x" data-action="delRel" data-id="${r.id}" title="Remove">✕</button></span>`).join('')}</div>` : ''}
+    </div>`;
   }
 
   function setupEvent(ev) {
@@ -189,7 +214,7 @@ window.Control = (function () {
       }
       const live = data.state.live[`${ev.id}:${m.id}`];
       return `<div class="vbox">
-        <div class="vtitle">${esc(v.name)} <span class="badge live">LIVE</span> <span class="rd">${esc(d.roundNames[m.round])}</span></div>
+        <div class="vtitle">${esc(v.name)} <span class="badge live">LIVE</span> <span class="rd">${esc(d.roundNames[m.round])} · ${esc(Rules.forMatch(ev, m).short)}</span></div>
         <div class="vplayers">${flag((player(ev, m.p1) || {}).country)} ${pname(ev, m.p1)} <i>v</i> ${flag((player(ev, m.p2) || {}).country)} ${pname(ev, m.p2)}</div>
         ${songsLine(ev, m)}
         ${live && live.summary ? `<div class="livesum">📱 Phone scoring: ${esc(live.summary.p1)} – ${esc(live.summary.p2)} ${esc(live.summary.text || '')}</div>` : ''}
@@ -265,7 +290,7 @@ window.Control = (function () {
   function renderSettings() {
     const s = data.state.settings;
     const sv = data.server;
-    const slideNames = { poolBracket: 'Pool bracket + standings', dartsBracket: 'Darts bracket + standings', nowPlaying: 'Now playing', upNext: 'Up next (flashing names)', pundits: 'Pundits\' verdict & odds', qr: 'QR code for phone scoring' };
+    const slideNames = { poolBracket: 'Pool bracket + standings', dartsBracket: 'Darts bracket + standings', nowPlaying: 'Now playing', upNext: 'Up next (flashing names)', pundits: 'Pundits\' verdict & odds', quotes: 'Post-match interviews (once there are some)', qr: 'QR code for phone scoring' };
     return `<div class="cols">
       <div class="card">
         <h2>📺 The show</h2>
@@ -278,7 +303,11 @@ window.Control = (function () {
         </select></label>
         <label>Seconds per slide<input type="number" min="3" max="120" id="set-secs" data-set="slideSeconds" value="${s.slideSeconds}"></label>
         <h3>Slides to show</h3>
-        ${Object.entries(slideNames).map(([k, l]) => `<label class="check"><input type="checkbox" data-slide="${k}" ${s.slides[k] ? 'checked' : ''}> ${l}</label>`).join('')}
+        ${Object.entries(slideNames).map(([k, l]) => `<label class="check"><input type="checkbox" data-slide="${k}" ${s.slides[k] !== false ? 'checked' : ''}> ${l}</label>`).join('')}
+        <label>Bracket view<select id="set-bview" data-set="bracketView">
+          <option value="auto" ${s.bracketView !== 'full' ? 'selected' : ''}>Auto-zoom: hide finished rounds so the rest is bigger</option>
+          <option value="full" ${s.bracketView === 'full' ? 'selected' : ''}>Always show the whole bracket</option>
+        </select></label>
         <h3>Scheduling</h3>
         <label class="check"><input type="checkbox" id="set-auto" data-set="autoAssign" ${s.autoAssign ? 'checked' : ''}> Automatically put the next match on a table/oche as soon as it's free</label>
       </div>
@@ -465,6 +494,15 @@ window.Control = (function () {
       await act('startMatch', { eventId: ev.id, matchId: sel.value, venueId: b.dataset.vid });
     } else if (a === 'quickTick') {
       if (await act('addFeed', { text: QUICK[Number(b.dataset.i)] })) toast('Posted to the ticker');
+    } else if (a === 'addRel') {
+      const A = document.getElementById('rel-a').value;
+      const B = document.getElementById('rel-b').value;
+      const type = document.getElementById('rel-type').value;
+      if (!A || !B || A === B) return toast('Pick two different players', true);
+      const rels = (data.state.relationships || []).filter((r) => !((r.a === A && r.b === B) || (r.a === B && r.b === A)));
+      if (await act('setRelationships', { relationships: rels.concat([{ a: A, b: B, type }]) })) toast('Added. The pundits have been briefed.');
+    } else if (a === 'delRel') {
+      await act('setRelationships', { relationships: (data.state.relationships || []).filter((r) => r.id !== b.dataset.id) });
     } else if (a === 'delFeed') {
       await act('deleteFeed', { id: b.dataset.id });
     } else if (a === 'newTournament') {

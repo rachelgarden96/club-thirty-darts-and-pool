@@ -19,6 +19,7 @@ const PUBLIC = path.join(__dirname, 'public');
 const store = new Store(process.env.DATA_DIR || path.join(__dirname, 'data'));
 
 let state = store.load() || T.newState();
+state.relationships = state.relationships || [];
 store.save(state);
 
 // ---------------------------------------------------------------- helpers
@@ -83,7 +84,7 @@ function cleanPlayers(list) {
 const actions = {
   saveSettings(a) {
     const s = state.settings;
-    for (const k of ['title', 'subtitle', 'hostName', 'homeCountry', 'publicUrl', 'theme']) {
+    for (const k of ['title', 'subtitle', 'hostName', 'homeCountry', 'publicUrl', 'theme', 'bracketView']) {
       if (typeof a.settings[k] === 'string') s[k] = a.settings[k].slice(0, 120);
     }
     if (a.settings.slideSeconds) s.slideSeconds = Math.min(120, Math.max(3, Number(a.settings.slideSeconds) || 10));
@@ -138,7 +139,7 @@ const actions = {
 
   result(a) {
     const e = ev(a.eventId);
-    const m = T.setResult(state, e, a.matchId, a.winnerId, a.score);
+    const m = T.setResult(state, e, a.matchId, a.winnerId, a.score, a.how);
     if (m) addFeed(Commentary.resultLines(state, e, T.derive(state)[e.id], m), 'result');
   },
 
@@ -166,10 +167,39 @@ const actions = {
           p1: String(a.summary.p1 || '').slice(0, 12),
           p2: String(a.summary.p2 || '').slice(0, 12),
           turn: a.summary.turn === 0 || a.summary.turn === 1 ? a.summary.turn : null,
+          endsAt: Number(a.summary.endsAt) > 0 ? Number(a.summary.endsAt) : null,
         }
         : null;
       state.live[`${e.id}:${m.id}`] = { data: a.data, summary, updatedAt: Date.now() };
     }
+  },
+
+  // Post-match interview from the phone scorer.
+  quote(a) {
+    const e = ev(a.eventId);
+    const m = T.getMatch(e, a.matchId);
+    if (!m || m.status !== 'done') throw new Error('That match has not finished yet.');
+    const ts = Date.now();
+    for (const q of (a.quotes || []).slice(0, 2)) {
+      const text = String(q.text || '').replace(/\s+/g, ' ').trim().slice(0, 140);
+      if (!text || (q.playerId !== m.p1 && q.playerId !== m.p2)) continue;
+      const p = T.playerById(e, q.playerId);
+      const role = q.playerId === m.winner ? 'winner' : 'loser';
+      const opp = T.playerById(e, q.playerId === m.p1 ? m.p2 : m.p1);
+      state.feed.push({
+        id: T.uid('f'), ts, kind: 'quote', role, eventId: e.id, playerId: p.id, quote: text,
+        text: role === 'winner' ? `🎤 ${p.name} after beating ${opp.name}: "${text}"` : `🧂 ${p.name} after losing to ${opp.name}: "${text}"`,
+      });
+      state.feed.push({ id: T.uid('f'), ts, kind: 'reaction', text: Commentary.quoteReaction(p.name, role) });
+    }
+    state.feed = state.feed.slice(-200);
+  },
+
+  setRelationships(a) {
+    state.relationships = (a.relationships || [])
+      .filter((r) => r && r.a && r.b && r.type && String(r.a).toLowerCase() !== String(r.b).toLowerCase())
+      .slice(0, 100)
+      .map((r) => ({ id: r.id || T.uid('r'), a: String(r.a).slice(0, 40), b: String(r.b).slice(0, 40), type: String(r.type).slice(0, 20) }));
   },
 
   addFeed(a) {
@@ -187,6 +217,7 @@ const actions = {
     state = s;
     state.live = state.live || {};
     state.feed = state.feed || [];
+    state.relationships = state.relationships || [];
   },
 
   newTournament() {

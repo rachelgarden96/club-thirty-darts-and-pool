@@ -25,6 +25,13 @@
     'NOVELTY MARKET: The Macarena breaks out spontaneously, {o:12/1}',
     'NOVELTY MARKET: A nine-dart finish tonight, {o:5000/1}',
     'NOVELTY MARKET: Somebody asks if bullseye is worth 100, {o:3/1}',
+    'NOVELTY MARKET: A treble 20 followed immediately by three 1s, {o:Evens}',
+    'NOVELTY MARKET: A pool ball leaves the table and lands in a drink, {o:9/2}',
+    'NOVELTY MARKET: Somebody claims they "used to play for the county", {o:1/4}',
+    'NOVELTY MARKET: A heckle about somebody\'s walk-on music, {o:1/3}',
+    'NOVELTY MARKET: Somebody tries a trick shot "for the cameras", {o:2/5}',
+    'NOVELTY MARKET: A dart bounces out and the thrower claims it counts, {o:1/6}',
+    'NOVELTY MARKET: The 15-minute pool clock is described as "a conspiracy", {o:4/6}',
   ];
 
   const GENERIC_QUOTES = [
@@ -36,7 +43,99 @@
     '"In my day we played with a broom handle and a tangerine."',
     '"Momentum is everything. Unless you have the tactics. Then tactics are everything."',
     '"I have seen a lot of pool in my time. That was some of it."',
+    '"The key to darts is three things: aim, throw, and then blame the board."',
+    '"Pool is just snooker for people with somewhere to be."',
+    '"Pressure? Pressure is for tyres. This is a party with a scoreboard."',
+    '"Form is temporary. Class is permanent. Neither is on show tonight."',
+    '"The trick is to hit the ball you meant to hit. Revolutionary, I know."',
+    '"Never trust anyone who chalks their cue between every shot. They are stalling. Or hiding something."',
+    '"Some of these players have the throwing action of someone feeding ducks."',
   ];
+
+  const HOUSE_RULES = [
+    'HOUSE RULES: Darts early rounds are 180, any finish, no bust. Quarters and semis go to 301 with busts. The final is 501, double out.',
+    'HOUSE RULES: Pool is one frame. Before the semis there\'s a 15-minute limit, and if time runs out, most balls potted wins. No dawdling.',
+  ];
+
+  // Relationships between players (set in the Control Room) for extra banter.
+  const RELATIONSHIPS = {
+    partners: {
+      label: 'Partners 💕',
+      result: [
+        'DOMESTIC INCIDENT on {V}: {W} beats partner {L}{Sx}. The sofa has been made up for tonight.',
+        'Relationship status: complicated. {W} shows their other half {L} absolutely no mercy.',
+        '"Till death do us part" does not apply on the {E} {VL}. {W} knocks out partner {L}.',
+      ],
+      preview: [
+        'COUPLES COUNSELLING on {V}: {A} v {B}. Separate taxis home have been booked as a precaution.',
+        '{A} v {B} on {V}. Whoever loses is doing the dishes until Christmas.',
+      ],
+    },
+    siblings: {
+      label: 'Siblings',
+      result: [
+        'Sibling rivalry settled: {W} beats {L}{Sx}. Mum\'s phone is already ringing.',
+        '{W} finally gets one over on their sibling {L}. Family WhatsApp is in meltdown.',
+      ],
+      preview: [
+        'SIBLING SHOWDOWN on {V}: {A} v {B}. Decades of "they started it" settled tonight.',
+        '{A} v {B}. Blood is thicker than water, but is it thicker than a pint of lager? We\'re about to find out.',
+      ],
+    },
+    mates: {
+      label: 'Best mates',
+      result: [
+        '{W} knocks out best mate {L}{Sx}. Friendship status: under review.',
+        '"It\'s only a game," says {L}, lying, after losing to best mate {W}.',
+      ],
+      preview: [
+        'BEST MATES COLLIDE on {V}: {A} v {B}. Friendship bracelets have been removed for the duration.',
+        '{A} v {B}. Best mates. Not for the next fifteen minutes.',
+      ],
+    },
+    housemates: {
+      label: 'Housemates',
+      result: [
+        '{W} beats housemate {L}{Sx}. The washing-up rota has been renegotiated accordingly.',
+        'Awkward breakfast incoming: {W} sends housemate {L} packing.',
+      ],
+      preview: [
+        'HOUSEMATE DERBY on {V}: {A} v {B}. Loser buys the next loo roll.',
+      ],
+    },
+    workmates: {
+      label: 'Work colleagues',
+      result: [
+        '{W} beats colleague {L}{Sx}. Monday\'s team meeting just got very awkward.',
+        '{L} will be "working from home" on Monday after losing to workmate {W}.',
+      ],
+      preview: [
+        'OFFICE DERBY on {V}: {A} v {B}. HR are monitoring the situation.',
+        '{A} v {B}. Somebody\'s getting a passive-aggressive email on Monday.',
+      ],
+    },
+    family: {
+      label: 'Parent & child',
+      result: [
+        'Generational warfare: {W} beats {L}{Sx}. Inheritance plans are being reviewed.',
+        '{W} beats family member {L}. Christmas seating plan updated.',
+      ],
+      preview: [
+        'FAMILY FEUD on {V}: {A} v {B}. Pocket money is on the line.',
+      ],
+    },
+    rivals: {
+      label: 'Sworn rivals',
+      result: [
+        'GRUDGE MATCH settled: {W} beats sworn rival {L}{Sx}. Mic drop.',
+        'The feud continues: {W} takes this round against {L}. The sequel is already in development.',
+      ],
+      preview: [
+        'GRUDGE MATCH on {V}: {A} v {B}. This one is personal.',
+        '{A} v {B}. They say they\'re "fine". They are not fine.',
+      ],
+    },
+  };
 
   // ---------------------------------------------------------------- helpers
   function hash(str) {
@@ -65,6 +164,15 @@
     if (!sc) return m.score || '';
     const [a, b] = [Number(sc[1]), Number(sc[2])];
     return m.winner === m.p1 ? `${a}-${b}` : `${b}-${a}`;
+  }
+  function relation(state, a, b) {
+    const x = (a || '').trim().toLowerCase();
+    const y = (b || '').trim().toLowerCase();
+    return (state.relationships || []).find((r) => {
+      const ra = r.a.trim().toLowerCase();
+      const rb = r.b.trim().toLowerCase();
+      return RELATIONSHIPS[r.type] && ((ra === x && rb === y) || (ra === y && rb === x));
+    }) || null;
   }
   function isHost(settings, p) {
     const h = (settings.hostName || '').trim().toLowerCase();
@@ -106,6 +214,80 @@
       .map((x) => ({ ...x, odds: fractional(x.prob) }));
   }
 
+  // Post-match "analysis": {W} winner, {L} loser, {Wf}/{Lf} first names, {P} pundit.
+  const ROASTS = [
+    'Taxi for {L}! Taxi for {L}!',
+    '{P}: "{Wf} looked sharp there. Very sharp. Possibly too sharp."',
+    '{L} will be hoping nobody filmed that. Somebody filmed that.',
+    'ANALYSIS: {P} on {W} v {L}: "{Wf} wanted it more. {Lf} wanted a kebab more."',
+    'STAT ATTACK: {W} beat {L}. Our data team describes the performance as "yes".',
+    '{P} on {L}: "The technique was there. Just not at the same time as the result."',
+    '{P} on {W}: "Composure. Poise. A suspiciously full pint they never seemed to drink."',
+    'POST-MATCH: {L} insists they "let {Wf} win". {Wf} insists otherwise. The footage is inconclusive.',
+    '{P}: "{Wf} looked like they\'d been practising. {Lf} looked like they\'d been told about it this morning."',
+    'TACTICS BOARD: {W}\'s game plan against {L} was simple: hit the thing. Revolutionary stuff.',
+    '{L} has requested a VAR review. There is no VAR. There never was.',
+    '{L} is out but remains the bookies\' favourite for "Best Excuse of the Night".',
+  ];
+  const ROASTS_DARTS = [
+    '{P} on {L}: "Some of those darts were in the right postcode. Just not on the right board."',
+    '{L}\'s darts were last seen heading for the fruit bowl.',
+    '{P}: "{Lf} throws darts like they\'re trying to get them back to a pet shop."',
+  ];
+  const ROASTS_POOL = [
+    '{P} on {L}: "That cue action was less Ronnie O\'Sullivan, more reversing a caravan."',
+    '{L} has filed a formal complaint about the cushions. The cushions have declined to comment.',
+    '{P}: "{Lf} potted the white more times than their own balls. Commitment to the bit."',
+  ];
+  const ROASTS_OUT = [
+    'WHERE ARE THEY NOW: {L} (knocked out of the {E}) has been spotted at the bar explaining what "really" happened.',
+    '{L} has asked for a recount in the {E}. There is nothing to recount.',
+    '{L} says they were "just warming up". The {E} has ended for them.',
+    'REPLAY CORNER: {L}\'s worst {E} shot has been nominated for the Turner Prize.',
+    'BREAKING: {L} has announced their retirement from {E}. Again. Third time this year.',
+    '{L}\'s {E} coaching team has resigned with immediate effect. It was one person and they\'ve gone for a smoke.',
+    'SPOTTED: {L} practising in the corner. Too late, {Lf}. Far too late.',
+  ];
+
+  const GENERIC_RESULTS = {
+    darts: [
+      '{W} checks out against {L}{Sx}. {L} left staring at the board like it owes them money.',
+      '{L} is OUT of the {E}. That is the oche equivalent of a Sunday league own goal.',
+      '{W} wins. {L} hit everything tonight except the numbers they were aiming for.',
+      '{L} exits the {E}. The dartboard has asked for a restraining order.',
+      '{W} gets the job done against {L}. Not pretty. Not clever. Extremely effective.',
+      '{W} beats {L}{Sx}. {L} was last seen blaming the flights, the lighting and the moon.',
+      '{L} is out. Their throwing action has been referred to the health and safety team.',
+      '{W} through to the {NR}. {L} through to the bar.',
+    ],
+    pool: [
+      '{W} clears up against {L}{Sx}. {L} left chalking a cue for absolutely no reason.',
+      'Scenes on {V}! {W} wins, {L} blames the cushions.',
+      '{W} sees off {L}. {L}\'s safety play was neither safe nor play.',
+      '{W} through. {L} spent more time chalking the cue than potting balls.',
+      '{W} wins it. {L} insists the table has a slope. The table does not have a slope.',
+      '{W} beats {L}. {L}\'s break was less "power" and more "polite suggestion".',
+      '{L} is out. The black ball has been sent for counselling after what it witnessed.',
+      '{W} through to the {NR}. {L} through to "telling everyone they were robbed".',
+    ],
+  };
+
+  // Reaction to a post-match interview.
+  function quoteReaction(name, role) {
+    const vars = { F: (name || '').trim().split(/\s+/)[0], P: pick(PUNDITS) };
+    return fill(pick(role === 'winner' ? [
+      '{P} on {F}\'s interview: "Classy. Humble. Slightly delusional."',
+      '{P}: "Lovely words from {F}. Not rehearsed at all. Definitely not in the toilets."',
+      '{P}: "That\'s a champion\'s mindset, that. Or a fourth pint. Hard to tell."',
+      '{P}: "{F} speaks like they\'ve already got the trophy. They have not got the trophy."',
+    ] : [
+      '{P}: "Classic {F}. Never lost a game in their life, just been unlucky four hundred times."',
+      '{P} on {F}\'s excuse: "I\'ve heard better excuses from a dog that ate homework."',
+      'FACT CHECK: {F}\'s excuse has been reviewed by our team. Verdict: absolute nonsense.',
+      '{P}: "Dignified in defeat. Well, defeated, anyway."',
+    ]), vars);
+  }
+
   // ---------------------------------------------------------------- results
   // Builds 1-2 headlines for a finished match.
   function resultLines(state, ev, d, m) {
@@ -120,9 +302,10 @@
       S: winnerFirst(m),
       E: ev.name, EU: ev.name.toUpperCase(), R: d.roundNames[m.round] || '', NR: d.roundNames[m.round + 1] || 'next round',
       V: (ev.venues.find((v) => v.id === m.venueId) || {}).name || `the ${ev.venueLabel.toLowerCase()}`,
-      P: pick(PUNDITS),
+      P: pick(PUNDITS), VL: ev.venueLabel.toLowerCase(),
     };
-    vars.Sx = vars.S ? ` ${vars.S}` : '';
+    vars.Sx = vars.S && m.how !== 'time' ? ` ${vars.S}` : '';
+    const rel = relation(state, W.name, L.name);
     const lines = [];
     const ws = Number(W.seed) || 0;
     const ls = Number(L.seed) || 0;
@@ -136,11 +319,21 @@
         '🏆 {W} WINS THE {EU}! {P}: "I said this would happen. I did not say it out loud, but I said it."',
       ]), vars));
       if (isHost(s, W)) lines.push(fill('The birthday legend wins their own tournament. Nobody is suspicious. Nobody at all.', vars));
+      if (rel) lines.push(fill(pick(RELATIONSHIPS[rel.type].result), vars));
       return lines;
     }
 
     let main;
-    if (isHost(s, W)) {
+    if (m.how === 'time') {
+      lines.push(fill(pick([
+        'BUZZER BEATER! {W} beats {L} on balls potted after the 15-minute limit. {L} ran down the clock and still lost.',
+        'TIME! {W} edges past {L} on balls potted. {P}: "Slow and steady. Mostly slow."',
+        'The clock wins again: {W} goes through on balls potted, {L} goes to the bar.',
+      ]), vars));
+    }
+    if (rel) {
+      main = pick(RELATIONSHIPS[rel.type].result);
+    } else if (isHost(s, W)) {
       main = pick([
         'The birthday legend {W} beats {L}{Sx}! The referee has been thanked for their... impartiality.',
         'BIRTHDAY WIN: {W} sees off {L}. {L} reportedly "let them win, it is their birthday". Sure.',
@@ -156,6 +349,9 @@
         'UPSET ALERT: {W} stuns seeded {L}. The form book has been set on fire and thrown in the canal.',
         'GIANT KILLING in the {E}! {W} sends No.{ls} seed {L} packing{Sx}.',
       ]);
+    } else if (W.country && L.country && Math.random() < 0.45) {
+      // Plenty of the time, skip the flag-waving and go straight for the roast.
+      main = pick(GENERIC_RESULTS[ev.id]);
     } else if (W.country && W.country === L.country) {
       main = pick([
         'A {WC} civil war goes the way of {W}{Sx}. Christmas dinner will be awkward for {L}.',
@@ -175,16 +371,14 @@
       main = pick([
         '{WC} beats {LC}! {W} wins the battle of the nations against {L}{Sx}.',
         'International incident: {W} of {WC} sends {LC}\'s {L} home. Diplomats are monitoring the situation.',
+        '{WC} 1, {LC} 0. {W} gets past {L} and the {WC} national anthem is being hummed, badly, at the bar.',
+        'Passport control for {L}: the {LC} challenge is over. {W} marches on for {WC}.',
+        '{W} puts {WC} on the map. Well, further on the map. {L} and {LC} go home.',
       ]);
     } else {
-      main = pick(ev.id === 'darts' ? [
-        '{W} checks out against {L}{Sx}. {L} left staring at the board like it owes them money.',
-        '{L} is OUT of the {E}. That is the oche equivalent of a Sunday league own goal.',
-      ] : [
-        '{W} clears up against {L}{Sx}. {L} left chalking a cue for absolutely no reason.',
-        'Scenes on {V}! {W} wins, {L} blames the cushions.',
-      ]);
+      main = pick(GENERIC_RESULTS[ev.id]);
     }
+
     vars.ls = ls;
     lines.push(fill(main, vars));
 
@@ -203,12 +397,8 @@
       }
     } else if (m.round === rounds - 2) {
       lines.push(fill('{W} books a place in the {E} semi-finals. {P} has already ordered the open-top bus.', vars));
-    } else if (Math.random() < 0.4) {
-      lines.push(fill(pick([
-        'Taxi for {L}! Taxi for {L}!',
-        '{P}: "{Wf} looked sharp there. Very sharp. Possibly too sharp."',
-        '{L} will be hoping nobody filmed that.',
-      ]), vars));
+    } else if (Math.random() < 0.75) {
+      lines.push(fill(pick(ROASTS.concat(ev.id === 'darts' ? ROASTS_DARTS : ROASTS_POOL)), vars));
     }
     return lines;
   }
@@ -259,6 +449,12 @@
             ]), { N: p.name, F: firstName(p), S: p.walkon, V: venue.name, P: pick(PUNDITS) }));
           }
         }
+        for (const mm of [cur, nx]) {
+          const A = mm && player(ev, mm.p1);
+          const B = mm && player(ev, mm.p2);
+          const rel = A && B && relation(state, A.name, B.name);
+          if (rel) lines.push(fill(pick(RELATIONSHIPS[rel.type].preview), { A: A.name, B: B.name, V: venue.name }));
+        }
         if (cur) {
           const live = state.live[`${ev.id}:${cur.id}`];
           let extra = '';
@@ -267,12 +463,46 @@
         }
       }
     }
+    // Post-match analysis of the latest results, and a roast or two for the fallen.
+    const recent = [];
+    for (const ev of evs) {
+      for (const m of ev.matches) if (m.status === 'done' && !m.bye) recent.push({ ev, m });
+    }
+    recent.sort((a, b) => (b.m.finishedAt || 0) - (a.m.finishedAt || 0));
+    for (const { ev, m } of recent.slice(0, 3)) {
+      const W = player(ev, m.winner);
+      const L = player(ev, m.winner === m.p1 ? m.p2 : m.p1);
+      if (!W || !L) continue;
+      const v = { W: W.name, L: L.name, Wf: firstName(W), Lf: firstName(L), P: pick(PUNDITS), E: ev.name };
+      lines.push(fill(pick(ROASTS.concat(ev.id === 'darts' ? ROASTS_DARTS : ROASTS_POOL)), v));
+    }
+    for (const { ev, m } of recent.slice(0, 8).sort(() => Math.random() - 0.5).slice(0, 2)) {
+      const L = player(ev, m.winner === m.p1 ? m.p2 : m.p1);
+      if (L) lines.push(fill(pick(ROASTS_OUT), { L: L.name, Lf: firstName(L), E: ev.name }));
+    }
+    // Pairs with a relationship who are both still in the same event.
+    for (const r of state.relationships || []) {
+      for (const ev of evs) {
+        const d = derived[ev.id];
+        if (d.champion) continue;
+        const out = new Set(d.eliminated);
+        const A = ev.players.find((p) => p.name.trim().toLowerCase() === r.a.trim().toLowerCase());
+        const B = ev.players.find((p) => p.name.trim().toLowerCase() === r.b.trim().toLowerCase());
+        if (A && B && !out.has(A.id) && !out.has(B.id) && RELATIONSHIPS[r.type]) {
+          lines.push(`COLLISION COURSE: ${A.name} and ${B.name} (${RELATIONSHIPS[r.type].label.replace(/ 💕/, '').toLowerCase()}) are both still in the ${ev.name}. Imagine the scenes if they meet.`);
+        }
+      }
+    }
+    if (evs.length) lines.push(pick(HOUSE_RULES));
+
     const top = Object.entries(countriesAlive).sort((a, b) => b[1] - a[1])[0];
     if (top && top[1] >= 2) lines.push(`${country(top[0]).toUpperCase()} has ${top[1]} players still in it. The ambassador has been informed.`);
 
     if (s.hostName) lines.push(`HAPPY 30TH ${s.hostName.toUpperCase()}! Odds on feeling 30 tomorrow morning: 1/1000.`);
     lines.push(`${pick(PUNDITS)}: ${pick(GENERIC_QUOTES)}`);
-    lines.push(pick(NOVELTY).replace(/\{o:([^}]+)\}/, '$1'));
+    lines.push(`${pick(PUNDITS)}: ${pick(GENERIC_QUOTES)}`);
+    const novelty = NOVELTY.slice().sort(() => Math.random() - 0.5).slice(0, 2);
+    for (const n of novelty) lines.push(n.replace(/\{o:([^}]+)\}/, '$1'));
     lines.push('KEEP SCORE ON YOUR PHONE: Scan the QR code on screen, pick your match and the bracket updates itself.');
     return lines;
   }
@@ -291,7 +521,7 @@
       cards.push({
         tag: `${ev.name}: Player to watch`, player: fav.player, odds: fav.odds,
         quote: pick([
-          `"${firstName(fav.player)} is the one they all fear. I fear them. My wife fears them."`,
+          `"${firstName(fav.player)} is the one they all fear. I fear them. My family fears them."`,
           `"If you're not backing ${firstName(fav.player)} at ${fav.odds}, frankly, why are you even here?"`,
           '"Hands like a surgeon. Temperament like a surgeon. Possibly is a surgeon."',
           `"I've seen ${firstName(fav.player)} warm up. I had to sit down afterwards."`,
@@ -331,7 +561,8 @@
     return cards;
   }
 
-  const api = { resultLines, fillerLines, punditCards, oddsBoard, PUNDITS, NOVELTY };
+  const RELATIONSHIP_TYPES = Object.entries(RELATIONSHIPS).map(([k, v]) => [k, v.label]);
+  const api = { resultLines, fillerLines, punditCards, oddsBoard, quoteReaction, PUNDITS, NOVELTY, RELATIONSHIP_TYPES };
   if (typeof module !== 'undefined') module.exports = api;
   else root.Commentary = api;
 })(this);

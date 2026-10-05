@@ -138,3 +138,10 @@ summary { cursor: pointer; font-weight: 700; padding: 4px 0; }
 .url a { color: var(--deep-rose); font-weight: 700; font-size: 18px; word-break: break-all; }
 code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; word-break: break-all; }
 .danger-h { color: var(--deep-rose) !important; }
+
+.rel-card { margin-top: 16px; }
+.relrow { display: flex; flex-wrap: wrap; gap: 6px; }
+.relrow select { flex: 1 1 160px; }
+.rels { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.rel { display: inline-flex; align-items: center; gap: 6px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 4px 4px 4px 12px; font-size: 14px; font-weight: 600; }
+.rel i { font-style: normal; font-weight: 500; color: var(--deep-sage); font-size: 12px; }

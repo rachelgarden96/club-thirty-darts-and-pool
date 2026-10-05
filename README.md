@@ -70,6 +70,23 @@ Guests scan the QR code, then:
 
 The remaining scores show live on the TV's *Now Playing* slide. If a phone dies, someone else can pick the same match and carry on from the live score.
 
+## House rules (set up automatically on the phones)
+
+| Round | Darts | Pool |
+|---|---|---|
+| Up to and including the Last 16 | 180, finish on anything, no bust (going past zero wins) | One frame, 15-minute limit |
+| Quarter-finals | 301, finish on anything, bust rule | One frame, 15-minute limit |
+| Semi-finals | 301, finish on anything, bust rule | One frame, no time limit |
+| Final | 501, must finish on a double | One frame, no time limit |
+
+When players pick their match on the phone, the right rules are already set: they just see a summary and press start. For timed pool frames, they agree to the 15-minute limit before the clock starts, keep count of balls potted, and if nobody has won when the time runs out, whoever has potted the most balls wins automatically. The countdown also shows on the TV. The rules live in `public/js/rules.js` if you ever want to change them.
+
+After a match, both players can give a **post-match interview** from the phone. Their quotes pop up on the TV, scroll on the ticker (with a pundit's reaction) and appear on a *Post-match interviews* slide.
+
+**Relationships and rivalries:** at the bottom of *Players & tables* you can tell the pundits who's a couple, siblings, best mates, housemates, workmates, family or sworn rivals. The commentary picks up on it when they play each other (or could meet later).
+
+**Bracket zoom:** by default the bracket hides rounds once they're finished, so the rest of the tournament gets bigger on the TV. To always show the whole bracket, change *Bracket view* in **Settings**.
+
 ## Never lose the standings
 
 - Every change is written to `data/state.json` using a crash-safe write, and a timestamped copy goes into `data/backups/` (the last 300 are kept).

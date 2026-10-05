@@ -67,7 +67,18 @@ window.Display = (function () {
     if (slide && slide.querySelector('.bracket-area')) fitBracket(slide);
   }
 
+  function clockText(ms) {
+    if (ms <= 0) return 'TIME!';
+    const s = Math.ceil(ms / 1000);
+    return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  }
+
   function tickClock() {
+    root.querySelectorAll('.timer[data-ends]').forEach((el) => {
+      const left = Number(el.dataset.ends) - Date.now();
+      el.textContent = `⏱ ${clockText(left)}`;
+      el.classList.toggle('low', left < 120000);
+    });
     const d = new Date();
     root.querySelector('.clock').textContent = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
   }
@@ -84,7 +95,7 @@ window.Display = (function () {
     for (const f of p.state.feed) {
       if (seenFeed.has(f.id)) continue;
       seenFeed.add(f.id);
-      if (!firstLoad && (f.kind === 'result' || f.kind === 'custom' || f.kind === 'draw')) flashQueue.push(f);
+      if (!firstLoad && ['result', 'custom', 'draw', 'quote'].includes(f.kind)) flashQueue.push(f);
     }
     firstLoad = false;
     runFlash();
@@ -108,6 +119,7 @@ window.Display = (function () {
     if (on.dartsBracket && st.events.darts.generated) list.push('bracket:darts');
     if (on.upNext && anyLive) list.push('next');
     if (on.pundits && anyLive && Commentary.punditCards(st, data.derived).length) list.push('pundits');
+    if (on.quotes !== false && st.feed.some((f) => f.kind === 'quote')) list.push('quotes');
     if (on.qr) list.push('qr');
     if (!list.length) list.push('welcome');
     return list;
@@ -140,7 +152,7 @@ window.Display = (function () {
 
   function renderSlide(key, animate) {
     const [kind, arg] = key.split(':');
-    const fn = { bracket: slideBracket, now: slideNow, next: slideNext, qr: slideQr, pundits: slidePundits, welcome: slideWelcome, champion: slideChampion }[kind];
+    const fn = { bracket: slideBracket, now: slideNow, next: slideNext, qr: slideQr, pundits: slidePundits, quotes: slideQuotes, welcome: slideWelcome, champion: slideChampion }[kind];
     let el = slidesEl.querySelector('.slide');
     if (animate || !el) {
       slidesEl.innerHTML = '<div class="slide"></div>';
@@ -189,11 +201,16 @@ window.Display = (function () {
   function slideBracket(evId) {
     const ev = data.state.events[evId];
     const d = data.derived[evId];
+    // Auto-zoom: once early rounds are finished, leave them off so the rest is bigger.
+    // Always keep at least the semi-finals and final on screen.
+    const zoom = data.state.settings.bracketView !== 'full' && !d.champion;
+    const start = zoom ? Math.max(1, Math.min(d.currentRound, ev.rounds - 1)) : 1;
     const chips = [`<span class="chip">${esc(d.champion ? 'Complete' : d.currentRoundName)}</span>`,
       `<span class="chip ghost">${d.remaining} of ${ev.players.length} still standing</span>`];
+    if (start > 1) chips.push('<span class="chip sage">🔍 Zoomed in</span>');
     return head(eventLogo(ev), chips) + `
       <div class="slide-body"><div class="bracket-wrap">
-        <div class="bracket-area"><div class="bracket-fit">${bracketHtml(ev, d, false)}</div><div class="bracket-fit alt" style="display:none">${bracketHtml(ev, d, true)}</div></div>
+        <div class="bracket-area"><div class="bracket-fit">${bracketHtml(ev, d, false, start)}</div><div class="bracket-fit alt" style="display:none">${bracketHtml(ev, d, true, start)}</div></div>
         ${standingsHtml(ev, d)}
       </div></div>`;
   }
@@ -233,30 +250,31 @@ window.Display = (function () {
     return `<div class="bbody">${groups.map((g) => `<div class="pair ${g.length === 2 ? 'two' : ''}">${g.map((m) => `<div class="mslot">${matchBox(ev, d, m)}</div>`).join('')}</div>`).join('')}</div>`;
   }
 
-  function bracketHtml(ev, d, mirrored) {
+  function bracketHtml(ev, d, mirrored, start) {
     const R = ev.rounds;
+    const S = start || 1;
     const byRound = (r) => ev.matches.filter((m) => m.round === r).sort((a, b) => a.slot - b.slot);
     const final = byRound(R)[0];
     const finalCol = (cls) => `<div class="bcol final-col ${cls}"><div class="bhead">${esc(d.roundNames[R])}</div><div class="bbody"><div class="pair"><div class="mslot"><div class="trophy">🏆</div>${matchBox(ev, d, final)}</div></div></div></div>`;
     const cols = [];
-    if (mirrored && R >= 2) {
-      for (let r = 1; r < R; r++) {
+    if (mirrored && R - S >= 1) {
+      for (let r = S; r < R; r++) {
         const ms = byRound(r);
-        cols.push(`<div class="bcol left ${r === 1 ? 'no-in' : ''}"><div class="bhead">${esc(d.roundNames[r])}</div>${columnHtml(ev, d, ms.slice(0, ms.length / 2))}</div>`);
+        cols.push(`<div class="bcol left ${r === S ? 'no-in' : ''}"><div class="bhead">${esc(d.roundNames[r])}</div>${columnHtml(ev, d, ms.slice(0, ms.length / 2))}</div>`);
       }
       cols.push(finalCol(''));
-      for (let r = R - 1; r >= 1; r--) {
+      for (let r = R - 1; r >= S; r--) {
         const ms = byRound(r);
-        cols.push(`<div class="bcol right ${r === 1 ? 'no-in' : ''}"><div class="bhead">${esc(d.roundNames[r])}</div>${columnHtml(ev, d, ms.slice(ms.length / 2))}</div>`);
+        cols.push(`<div class="bcol right ${r === S ? 'no-in' : ''}"><div class="bhead">${esc(d.roundNames[r])}</div>${columnHtml(ev, d, ms.slice(ms.length / 2))}</div>`);
       }
     } else {
-      for (let r = 1; r < R; r++) {
-        cols.push(`<div class="bcol left ${r === 1 ? 'no-in' : ''}"><div class="bhead">${esc(d.roundNames[r])}</div>${columnHtml(ev, d, byRound(r))}</div>`);
+      for (let r = S; r < R; r++) {
+        cols.push(`<div class="bcol left ${r === S ? 'no-in' : ''}"><div class="bhead">${esc(d.roundNames[r])}</div>${columnHtml(ev, d, byRound(r))}</div>`);
       }
-      cols.push(finalCol(R === 1 ? 'solo' : 'end'));
+      cols.push(finalCol(R === S ? 'solo' : 'end'));
     }
-    const perCol = mirrored && R >= 2 ? 2 ** (R - 2) : 2 ** (R - 1);
-    const h = 40 + perCol * 98 + (R === 1 ? 70 : 0);
+    const perCol = mirrored && R - S >= 1 ? 2 ** (R - S - 1) : 2 ** (R - S);
+    const h = 40 + perCol * 98 + (R === S ? 70 : 0);
     return `<div class="bracket ${mirrored ? 'mirrored' : 'plain'}" style="--bh:${h}px">${cols.join('')}</div>`;
   }
 
@@ -272,7 +290,7 @@ window.Display = (function () {
       f.style.display = 'block';
       f.style.transform = 'none';
       const b = f.firstElementChild;
-      const s = Math.min(W / b.scrollWidth, H / b.offsetHeight, 1.45);
+      const s = Math.min(W / b.scrollWidth, H / b.offsetHeight, 2);
       if (!best || s > best.s + 0.02) best = { f, s, w: b.scrollWidth * s, h: b.offsetHeight * s };
     }
     for (const f of fits) f.style.display = f === best.f ? 'block' : 'none';
@@ -317,7 +335,7 @@ window.Display = (function () {
         const s = live && live.summary;
         const sc = (i) => (s ? `<span class="ls ${s.turn === i ? 'thrower' : ''}">${esc(i === 0 ? s.p1 : s.p2)}</span>` : '');
         return `<div class="vcard ${ev.venues.length > 3 ? 'compact' : ''}">
-          <div class="vh"><span class="vn">${esc(v.name)}</span><span class="vr">${esc(d.roundNames[m.round])}</span>${s ? '<span class="vl">LIVE SCORE</span>' : ''}</div>
+          <div class="vh"><span class="vn">${esc(v.name)}</span><span class="vr">${esc(d.roundNames[m.round])} · ${esc(Rules.forMatch(ev, m).short)}</span>${s && s.endsAt ? `<span class="vl timer" data-ends="${s.endsAt}">⏱ ${clockText(s.endsAt - Date.now())}</span>` : s ? '<span class="vl">LIVE SCORE</span>' : ''}</div>
           <div class="vs-line">${who(ev, m.p1)}${sc(0)}</div>
           ${song(ev, m.p1)}
           <div class="vs-sep">VS</div>
@@ -355,7 +373,7 @@ window.Display = (function () {
         }
         shown.add(m.id);
         return `<div class="vcard upcard ${ev.venues.length > 3 ? 'compact' : ''}">
-          <div class="vh"><span class="vn">${esc(v.name)} · Next up</span><span class="vr">${esc(d.roundNames[m.round])}</span></div>
+          <div class="vh"><span class="vn">${esc(v.name)} · Next up</span><span class="vr">${esc(d.roundNames[m.round])} · ${esc(Rules.forMatch(ev, m).short)}</span></div>
           <div class="vs-line">${sideLabel(ev, m, 'p1')}</div>
           ${song(ev, m.p1)}
           <div class="vs-sep">VS</div>
@@ -417,6 +435,22 @@ window.Display = (function () {
       `<div class="slide-body"><div class="pgrid n${cards.length}">${html}</div></div>`;
   }
 
+  // ------------------------------------------------------------ post-match interviews
+  function slideQuotes() {
+    const quotes = data.state.feed.filter((f) => f.kind === 'quote').slice(-6).reverse();
+    const html = quotes.map((q) => {
+      const ev = data.state.events[q.eventId];
+      const p = ev && player(ev, q.playerId);
+      return `<div class="qcard ${q.role}">
+        <div class="qtag">${q.role === 'winner' ? '🎤 Winner' : '🧂 Beaten'} · ${esc(ev ? ev.name : '')}</div>
+        <div class="qq"><span>\u201C${esc(q.quote)}\u201D</span></div>
+        <div class="qwho">${p ? flag(p.country) : ''}<span>${esc(p ? p.name : '')}</span></div>
+      </div>`;
+    }).join('');
+    return head('Post-match <em>interviews</em>', ['<span class="chip">Straight from the players</span>']) +
+      `<div class="slide-body"><div class="qgrid n${quotes.length}">${html}</div></div>`;
+  }
+
   // ------------------------------------------------------------ welcome / champion
   function slideWelcome() {
     const s = data.state.settings;
@@ -449,7 +483,7 @@ window.Display = (function () {
     if (flashing || !flashQueue.length) return;
     const f = flashQueue.shift();
     flashing = true;
-    flashEl.querySelector('.k').textContent = f.kind === 'result' ? (f.text.startsWith('🏆') ? 'CHAMPION' : 'RESULT') : f.kind === 'draw' ? 'THE DRAW' : 'BREAKING';
+    flashEl.querySelector('.k').textContent = f.kind === 'result' ? (f.text.startsWith('🏆') ? 'CHAMPION' : 'RESULT') : f.kind === 'draw' ? 'THE DRAW' : f.kind === 'quote' ? 'POST-MATCH' : 'BREAKING';
     flashEl.querySelector('.v').textContent = f.text;
     flashEl.classList.add('show');
     setTimeout(() => {

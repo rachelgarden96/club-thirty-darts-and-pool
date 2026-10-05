@@ -120,3 +120,35 @@ test('odds board covers everybody still in', () => {
   assert.strictEqual(board.length, 8);
   assert.ok(board.every((b) => /^(\d+\/\d+|Evens)$/.test(b.odds)));
 });
+
+test('house rules by round', () => {
+  const Rules = require('../public/js/rules');
+  // 32-player bracket: 5 rounds (Last 32, Last 16, QF, SF, Final)
+  assert.deepStrictEqual([1, 2, 3, 4, 5].map((r) => Rules.darts(5, r).start), [180, 180, 301, 301, 501]);
+  assert.ok(Rules.darts(5, 2).noBust && !Rules.darts(5, 3).noBust);
+  assert.ok(Rules.darts(5, 5).doubleOut && !Rules.darts(5, 4).doubleOut);
+  // Pool: timed before the semi-finals only
+  assert.deepStrictEqual([1, 2, 3, 4, 5].map((r) => Rules.pool(5, r).minutes), [15, 15, 15, null, null]);
+});
+
+test('a pool win on time is recorded and undone cleanly', () => {
+  const { s, ev } = setup(4, { venues: 1 });
+  T.autoAssign(s);
+  const m = ev.matches.find((x) => x.status === 'playing');
+  T.setResult(s, ev, m.id, m.p2, '3-5', 'time');
+  assert.strictEqual(m.how, 'time');
+  const lines = Commentary.resultLines(s, ev, T.derive(s).pool, m);
+  assert.ok(lines.some((l) => /balls potted|clock/i.test(l)), lines.join(' | '));
+  T.resetMatch(s, ev, m.id);
+  assert.strictEqual(m.how, null);
+});
+
+test('relationship banter kicks in when a couple meet', () => {
+  const { s, ev } = setup(2, { venues: 1 });
+  s.relationships = [{ id: 'r1', a: 'Player 1', b: 'player 2', type: 'partners' }];
+  T.autoAssign(s);
+  const m = ev.matches[0];
+  T.setResult(s, ev, m.id, m.p1, '');
+  const lines = Commentary.resultLines(s, ev, T.derive(s).pool, m);
+  assert.ok(lines.some((l) => /partner|other half/i.test(l)), lines.join(' | '));
+});
