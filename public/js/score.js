@@ -234,7 +234,7 @@
 
   function startGame() {
     const s = setup;
-    const base = { link: s.link, names: s.names.map((n) => n.trim()), ids: s.ids, winner: null, history: [] };
+    const base = { link: s.link, names: s.names.map((n) => n.trim()), ids: s.ids, winner: null, history: [], startedAt: Date.now() };
     if (s.kind === 'darts') {
       const r = s.link ? s.rules : {
         start: s.start, doubleOut: s.finish === 'double', noBust: s.finish === 'nobust',
@@ -244,7 +244,7 @@
         ...base, kind: 'darts',
         start: r.start, doubleOut: r.doubleOut, noBust: r.noBust, label: r.label, legsTo: s.link ? 1 : s.legsTo,
         legs: [0, 0], scores: [r.start, r.start], turn: s.first, legStarter: s.first, cur: [],
-        stats: [{ pts: 0, darts: 0 }, { pts: 0, darts: 0 }], last: ['', ''],
+        stats: [0, 1].map(() => ({ pts: 0, darts: 0, best: 0, tons: 0, n180: 0, busts: 0, checkout: 0 })), last: ['', ''],
       };
     } else if (s.link) {
       g = {
@@ -292,18 +292,30 @@
     const out = rem === 0 ? (!g.doubleOut || m === 2) : (rem < 0 && g.noBust);
     const bust = !out && (rem < 0 || (g.doubleOut && rem <= 1));
     const ended = bust || out || g.cur.length === 3;
-    if (ended) g.stats[p].darts += g.cur.length;
+    const st = g.stats[p];
+    if (ended) st.darts += g.cur.length;
+    // Visit stats for the Stats Centre.
+    const visit = (pts) => {
+      st.best = Math.max(st.best || 0, pts);
+      if (pts >= 100) st.tons = (st.tons || 0) + 1;
+      if (pts === 180) st.n180 = (st.n180 || 0) + 1;
+    };
     if (bust) {
+      st.busts = (st.busts || 0) + 1;
       g.last[p] = 'BUST';
       bigFlash('BUST!', 'red');
       endTurn();
     } else if (out) {
-      g.stats[p].pts += Math.min(sum, g.scores[p]);
+      const scored = Math.min(sum, g.scores[p]);
+      st.pts += scored;
+      st.checkout = Math.max(st.checkout || 0, scored);
+      visit(scored);
       g.scores[p] = 0;
       g.legs[p]++;
       g.last[p] = `Out on ${dartLabel(d)}`;
       if (g.legs[p] >= g.legsTo) {
         g.winner = p;
+        g.endedAt = Date.now();
         g.cur = [];
         bigFlash('GAME SHOT!', 'yellow');
         screen = 'over';
@@ -317,7 +329,8 @@
       }
     } else if (g.cur.length === 3) {
       g.scores[p] = rem;
-      g.stats[p].pts += sum;
+      st.pts += sum;
+      visit(sum);
       g.last[p] = String(sum);
       if (sum === 180) bigFlash('ONE HUNDRED AND EIGHTYYYY!', 'yellow');
       else if (sum >= 140) bigFlash(`${sum}!`, 'yellow');
@@ -419,6 +432,7 @@
     if (g.balls[0] !== g.balls[1]) {
       const w = g.balls[0] > g.balls[1] ? 0 : 1;
       g.winner = w;
+      g.endedAt = Date.now();
       g.how = 'time';
       bigFlash(`TIME! ${g.names[w].toUpperCase()} WINS ON BALLS`, 'yellow');
       screen = 'over';
@@ -455,6 +469,7 @@
       if (!confirm(`${g.names[i]} won the frame?`)) return;
       snapshot();
       g.winner = i;
+      g.endedAt = Date.now();
       g.how = g.timeUp ? 'time' : null;
       bigFlash('FRAME AND MATCH!', 'yellow');
       screen = 'over';
@@ -574,7 +589,9 @@
     const send = document.getElementById('send');
     if (send) send.onclick = async () => {
       send.disabled = true;
-      const ok = await act('result', { eventId: g.link.eventId, matchId: g.link.matchId, winnerId: g.ids[w], score, how: g.how || null });
+      if (!g.endedAt) g.endedAt = Date.now();
+      const { history, ...lean } = g;
+      const ok = await act('result', { eventId: g.link.eventId, matchId: g.link.matchId, winnerId: g.ids[w], score, how: g.how || null, game: lean });
       if (ok) {
         g.sent = true;
         save();

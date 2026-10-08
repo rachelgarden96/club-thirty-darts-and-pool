@@ -1,5 +1,5 @@
 /* Control Room: practical, readable, laptop-first (works on a phone too). */
-#control { background: var(--bg); min-height: calc(100vh - 50px); }
+#control { background: var(--bg); min-height: calc(100vh - var(--tabs-h, 50px)); }
 .ctl { max-width: 1800px; margin: 0 auto; padding: 16px; }
 .subnav { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; }
 .subnav button {

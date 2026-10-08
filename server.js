@@ -13,6 +13,7 @@ const { spawn } = require('child_process');
 const T = require('./lib/tournament');
 const Store = require('./lib/store');
 const Commentary = require('./public/js/commentary');
+const Stats = require('./public/js/stats');
 
 const PORT = Number(process.env.PORT) || 3030;
 const PUBLIC = path.join(__dirname, 'public');
@@ -20,6 +21,7 @@ const store = new Store(process.env.DATA_DIR || path.join(__dirname, 'data'));
 
 let state = store.load() || T.newState();
 state.relationships = state.relationships || [];
+state.stats = state.stats || {};
 store.save(state);
 
 // ---------------------------------------------------------------- helpers
@@ -61,6 +63,16 @@ function addFeed(lines, kind) {
   state.feed = state.feed.slice(-200);
 }
 
+// Stats only count for matches that still have a result.
+function dropStaleStats(e) {
+  for (const k of Object.keys(state.stats)) {
+    const [evId, mid] = k.split(':');
+    if (evId !== e.id) continue;
+    const m = T.getMatch(e, mid);
+    if (!m || m.status !== 'done') delete state.stats[k];
+  }
+}
+
 function ev(id) {
   const e = state.events[id];
   if (!e) throw new Error('Unknown event.');
@@ -84,7 +96,7 @@ function cleanPlayers(list) {
 const actions = {
   saveSettings(a) {
     const s = state.settings;
-    for (const k of ['title', 'subtitle', 'hostName', 'homeCountry', 'publicUrl', 'theme', 'bracketView']) {
+    for (const k of ['title', 'subtitle', 'hostName', 'homeCountry', 'publicUrl', 'theme', 'bracketView', 'wifiName', 'wifiPassword']) {
       if (typeof a.settings[k] === 'string') s[k] = a.settings[k].slice(0, 120);
     }
     if (a.settings.slideSeconds) s.slideSeconds = Math.min(120, Math.max(3, Number(a.settings.slideSeconds) || 10));
@@ -124,6 +136,7 @@ const actions = {
   generate(a) {
     const e = ev(a.eventId);
     T.generate(e);
+    dropStaleStats(e);
     for (const k of Object.keys(state.live)) if (k.startsWith(`${e.id}:`)) delete state.live[k];
     const n = e.players.length;
     addFeed([`THE DRAW IS MADE: ${n} players go into the ${e.name}. ${Commentary.PUNDITS[n % Commentary.PUNDITS.length]}: "Some very tasty ties in there."`], 'draw');
@@ -135,16 +148,26 @@ const actions = {
     e.matches = [];
     e.rounds = 0;
     for (const k of Object.keys(state.live)) if (k.startsWith(`${e.id}:`)) delete state.live[k];
+    dropStaleStats(e);
   },
 
   result(a) {
     const e = ev(a.eventId);
+    const key = `${e.id}:${a.matchId}`;
+    // Stats from the phone that scored it (or the last live update if the
+    // result was entered in the Control Room while a phone was scoring).
+    const live = state.live[key];
+    const stats = Stats.fromGame(a.game || (live && live.data));
     const m = T.setResult(state, e, a.matchId, a.winnerId, a.score, a.how);
+    const match = T.getMatch(e, a.matchId);
+    if (stats && stats.players.every((p) => p.id === match.p1 || p.id === match.p2)) state.stats[key] = { ...stats, at: Date.now() };
     if (m) addFeed(Commentary.resultLines(state, e, T.derive(state)[e.id], m), 'result');
   },
 
   resetMatch(a) {
-    T.resetMatch(state, ev(a.eventId), a.matchId);
+    const e = ev(a.eventId);
+    T.resetMatch(state, e, a.matchId);
+    dropStaleStats(e);
   },
 
   startMatch(a) {
@@ -218,6 +241,7 @@ const actions = {
     state.live = state.live || {};
     state.feed = state.feed || [];
     state.relationships = state.relationships || [];
+    state.stats = state.stats || {};
   },
 
   newTournament() {

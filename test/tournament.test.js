@@ -150,7 +150,7 @@ test('relationship banter kicks in when a couple meet', () => {
   const m = ev.matches[0];
   T.setResult(s, ev, m.id, m.p1, '');
   const lines = Commentary.resultLines(s, ev, T.derive(s).pool, m);
-  assert.ok(lines.some((l) => /partner|other half/i.test(l)), lines.join(' | '));
+  assert.ok(lines.some((l) => /partner|other half|couples|domestic/i.test(l)), lines.join(' | '));
 });
 
 test('earlier rounds are played before later ones', () => {
@@ -211,4 +211,25 @@ test('an idle table is free play while games it cannot host are still being deci
   const { s } = setup(6, { seeds: 6, venues: 3 });
   T.autoAssign(s);
   assert.deepStrictEqual(T.derive(s).pool.freePlay, ['v3']);
+});
+
+test('stats leaderboards from phone-scored games', () => {
+  const Stats = require('../public/js/stats');
+  const { s, ev } = setup(4, { venues: 2, event: 'darts' });
+  T.autoAssign(s);
+  const [a, b] = ev.matches.filter((m) => m.round === 1);
+  const game = (m, sA, sB) => Stats.fromGame({ kind: 'darts', start: 301, ids: [m.p1, m.p2], startedAt: 1, endedAt: 60001, stats: [sA, sB] });
+  s.stats[`darts:${a.id}`] = game(a, { pts: 301, darts: 15, best: 140, tons: 2, n180: 0, busts: 0, checkout: 41 }, { pts: 150, darts: 15, best: 60, tons: 0, n180: 0, busts: 2, checkout: 0 });
+  s.stats[`darts:${b.id}`] = game(b, { pts: 301, darts: 12, best: 180, tons: 1, n180: 1, busts: 0, checkout: 61 }, { pts: 90, darts: 12, best: 45, tons: 0, n180: 0, busts: 0, checkout: 0 });
+  T.setResult(s, ev, a.id, a.p1, '1-0');
+  T.setResult(s, ev, b.id, b.p1, '1-0');
+  const agg = Stats.aggregate(s);
+  assert.strictEqual(agg.bestAvg.player.id, b.p1);
+  assert.strictEqual(agg.worstAvg.player.id, b.p2);
+  assert.strictEqual(agg.bestVisit.value, 180);
+  assert.strictEqual(agg.most180.player.id, b.p1);
+  assert.strictEqual(agg.bestCheckout.value, 61);
+  assert.strictEqual(agg.mostBusts.player.id, a.p2);
+  assert.ok(Stats.cards(s).length >= 6);
+  assert.ok(Stats.tickerLines(s).some((l) => /WOODEN SPOON/.test(l)));
 });

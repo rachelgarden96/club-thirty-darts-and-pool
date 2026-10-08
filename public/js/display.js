@@ -79,6 +79,7 @@ window.Display = (function () {
       el.textContent = `⏱ ${clockText(left)}`;
       el.classList.toggle('low', left < 120000);
     });
+    if (data) updateTickerLabel();
     const d = new Date();
     root.querySelector('.clock').textContent = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
   }
@@ -96,8 +97,11 @@ window.Display = (function () {
       if (seenFeed.has(f.id)) continue;
       seenFeed.add(f.id);
       if (!firstLoad && ['result', 'custom', 'draw', 'quote'].includes(f.kind)) flashQueue.push(f);
+      if (!firstLoad) tickerNews.push(f.text);
     }
     firstLoad = false;
+    tickerStale = true;
+    updateTickerLabel();
     runFlash();
 
     slides = buildSlideList();
@@ -120,6 +124,7 @@ window.Display = (function () {
     if (on.upNext && anyLive) list.push('next');
     if (on.pundits && anyLive && Commentary.punditCards(st, data.derived).length) list.push('pundits');
     if (on.quotes !== false && st.feed.some((f) => f.kind === 'quote')) list.push('quotes');
+    if (on.stats !== false && Stats.cards(st).length) list.push('stats');
     if (on.qr) list.push('qr');
     if (!list.length) list.push('welcome');
     return list;
@@ -152,7 +157,7 @@ window.Display = (function () {
 
   function renderSlide(key, animate) {
     const [kind, arg] = key.split(':');
-    const fn = { bracket: slideBracket, now: slideNow, next: slideNext, qr: slideQr, pundits: slidePundits, quotes: slideQuotes, welcome: slideWelcome, champion: slideChampion }[kind];
+    const fn = { bracket: slideBracket, now: slideNow, next: slideNext, qr: slideQr, pundits: slidePundits, quotes: slideQuotes, stats: slideStats, welcome: slideWelcome, champion: slideChampion }[kind];
     let el = slidesEl.querySelector('.slide');
     if (animate || !el) {
       slidesEl.innerHTML = '<div class="slide"></div>';
@@ -170,9 +175,11 @@ window.Display = (function () {
     const p = player(ev, id);
     return p ? esc(p.name) : 'TBC';
   }
-  function who(ev, id) {
+  function who(ev, id, withSong) {
     const p = player(ev, id);
-    return p ? `${flag(p.country)}<span class="nm">${esc(p.name)}</span>` : '<span class="nm tbc">TBC</span>';
+    if (!p) return '<span class="nm tbc">TBC</span>';
+    const tune = withSong && p.walkon ? `<span class="song-in">🎵 ${esc(p.walkon)}</span>` : '';
+    return `${flag(p.country)}<span class="nm">${esc(p.name)}</span>${tune}`;
   }
   function venueName(ev, vid) {
     const v = ev.venues.find((x) => x.id === vid);
@@ -184,10 +191,6 @@ window.Display = (function () {
   }
   function eventLogo(ev) {
     return `<span class="event-logo">${logo(`${ev.id}-championship`)}</span>`;
-  }
-  function song(ev, id) {
-    const p = player(ev, id);
-    return p && p.walkon ? `<div class="song">🎵 ${esc(p.walkon)}</div>` : '';
   }
   function head(title, chips) {
     if (title.startsWith('<span class="event-logo"')) return `<div class="slide-head">${title}${(chips || []).join('')}</div>`;
@@ -278,6 +281,18 @@ window.Display = (function () {
     return `<div class="bracket ${mirrored ? 'mirrored' : 'plain'}" style="--bh:${h}px">${cols.join('')}</div>`;
   }
 
+  // Long names get a smaller font rather than being cut off.
+  function shrinkNames(scope, selector = '.bp .nm') {
+    for (const el of scope.querySelectorAll(selector)) {
+      el.style.fontSize = '';
+      let size = parseFloat(getComputedStyle(el).fontSize);
+      while (el.scrollWidth > el.clientWidth + 1 && size > 14) {
+        size -= 1;
+        el.style.fontSize = `${size}px`;
+      }
+    }
+  }
+
   // Pick whichever layout (straight or mirrored) fills the screen best.
   function fitBracket(slide) {
     const area = slide.querySelector('.bracket-area');
@@ -285,10 +300,12 @@ window.Display = (function () {
     const W = area.clientWidth;
     const H = area.clientHeight;
     if (!W || !H) return; // display tab hidden; refitted when shown
+    shrinkNames(slide, '.standings .row .nm');
     let best = null;
     for (const f of fits) {
       f.style.display = 'block';
       f.style.transform = 'none';
+      shrinkNames(f);
       const b = f.firstElementChild;
       const s = Math.min(W / b.scrollWidth, H / b.offsetHeight, 2);
       if (!best || s > best.s + 0.02) best = { f, s, w: b.scrollWidth * s, h: b.offsetHeight * s };
@@ -322,6 +339,10 @@ window.Display = (function () {
     const cols = n > 3 ? 2 : 1;
     return `grid-template-columns:repeat(${cols},1fr)`;
   }
+  // Three or more rows of cards: use the tighter layout so nothing is cut off.
+  function compact(n) {
+    return Math.ceil(n / (n > 3 ? 2 : 1)) >= 3 ? 'compact' : '';
+  }
 
   function slideNow() {
     const panels = liveEvents().map((ev) => {
@@ -335,13 +356,11 @@ window.Display = (function () {
         const live = liveFor(ev, m);
         const s = live && live.summary;
         const sc = (i) => (s ? `<span class="ls ${s.turn === i ? 'thrower' : ''}">${esc(i === 0 ? s.p1 : s.p2)}</span>` : '');
-        return `<div class="vcard ${ev.venues.length > 3 ? 'compact' : ''}">
+        return `<div class="vcard ${compact(ev.venues.length)}">
           <div class="vh"><span class="vn">${esc(v.name)}</span><span class="vr">${esc(d.roundNames[m.round])} · ${esc(Rules.forMatch(ev, m).short)}</span>${s && s.endsAt ? `<span class="vl timer" data-ends="${s.endsAt}">⏱ ${clockText(s.endsAt - Date.now())}</span>` : s ? '<span class="vl">LIVE SCORE</span>' : ''}</div>
-          <div class="vs-line">${who(ev, m.p1)}${sc(0)}</div>
-          ${song(ev, m.p1)}
+          <div class="vs-line">${who(ev, m.p1, true)}${sc(0)}</div>
           <div class="vs-sep">VS</div>
-          <div class="vs-line">${who(ev, m.p2)}${sc(1)}</div>
-          ${song(ev, m.p2)}
+          <div class="vs-line">${who(ev, m.p2, true)}${sc(1)}</div>
           ${s && s.text ? `<div class="lsum">${esc(s.text)}</div>` : ''}
         </div>`;
       }).join('');
@@ -354,7 +373,7 @@ window.Display = (function () {
   // ------------------------------------------------------------ up next
   function sideLabel(ev, m, side) {
     const pid = m[side];
-    if (pid) return who(ev, pid);
+    if (pid) return who(ev, pid, true);
     const feeders = data.derived[ev.id].feeders[m.id];
     const f = ev.matches.find((x) => x.id === feeders[side === 'p1' ? 0 : 1]);
     if (f && f.p1 && f.p2) return `<span class="nm tbc">Winner of ${nm(ev, f.p1)} v ${nm(ev, f.p2)}</span>`;
@@ -373,13 +392,11 @@ window.Display = (function () {
           return `<div class="vcard free upcard ${u.freePlay ? 'freeplay' : ''}"><div class="vh"><span class="vn">${esc(v.name)}</span></div><div class="free-msg">${u.freePlay ? '🎉 Open for free play: help yourselves!' : 'Nothing queued yet'}</div></div>`;
         }
         shown.add(m.id);
-        return `<div class="vcard upcard ${ev.venues.length > 3 ? 'compact' : ''}">
+        return `<div class="vcard upcard ${compact(ev.venues.length)}">
           <div class="vh"><span class="vn">${esc(v.name)} · Next up</span><span class="vr">${esc(d.roundNames[m.round])} · ${esc(Rules.forMatch(ev, m).short)}</span></div>
           <div class="vs-line">${sideLabel(ev, m, 'p1')}</div>
-          ${song(ev, m.p1)}
           <div class="vs-sep">VS</div>
           <div class="vs-line">${sideLabel(ev, m, 'p2')}</div>
-          ${song(ev, m.p2)}
           <div class="after">${cur ? `After ${nm(ev, cur.p1)} v ${nm(ev, cur.p2)}` : 'Head to the ' + esc(ev.venueLabel.toLowerCase()) + ' now!'}</div>
         </div>`;
       }).join('');
@@ -395,31 +412,53 @@ window.Display = (function () {
   }
 
   // ------------------------------------------------------------ qr
-  function slideQr() {
-    const url = data.server.scoreUrl;
-    let svg = '';
+  function qrSvg(text) {
     try {
       const qr = qrcode(0, 'M');
-      qr.addData(url);
+      qr.addData(text);
       qr.make();
-      svg = qr.createSvgTag({ cellSize: 10, margin: 0, scalable: true });
+      return qr.createSvgTag({ cellSize: 10, margin: 0, scalable: true });
     } catch (e) {
-      svg = '<div style="color:#000;font-size:30px;padding:40px">QR error</div>';
+      return '<div style="color:#000;font-size:30px;padding:40px">QR error</div>';
     }
+  }
+
+  function slideQr() {
+    const url = data.server.scoreUrl;
+    const s = data.state.settings;
+    const wifi = (s.wifiName || '').trim();
+    const wifiStep = wifi
+      ? `Connect to the guest Wi-Fi: <b>${esc(wifi)}</b>${s.wifiPassword ? ` (password <b>${esc(s.wifiPassword)}</b>)` : ''}`
+      : 'Connect your phone to the <b>guest Wi-Fi</b>';
     return head('Keep <em>Score</em>', ['<span class="chip">On your phone</span>']) + `
-      <div class="slide-body"><div class="qr-wrap">
-        <div class="qr-box">${svg}</div>
+      <div class="slide-body"><div class="qr-wrap ${wifi ? 'with-wifi' : ''}">
+        ${wifi ? `<div class="qr-col small"><div class="qr-cap">① Join the Wi-Fi</div><div class="qr-box">${qrSvg(App.wifiQrText(wifi, s.wifiPassword))}</div></div>` : ''}
+        <div class="qr-col"><div class="qr-cap">${wifi ? '② ' : ''}Open the scorer</div><div class="qr-box">${qrSvg(url)}</div></div>
         <div class="qr-text">
           <h2>Scan me to be<br>the <em>scorer</em></h2>
           <ol>
-            <li>Scan with your phone camera (same Wi-Fi!)</li>
-            <li>Pick your match, or start a free game</li>
-            <li>Darts: tap singles, doubles, trebles &amp; bulls</li>
+            <li><span>${wifiStep}</span></li>
+            <li>Scan the scorer code with your phone camera</li>
+            <li>Pick your match: the rules are set up for you</li>
             <li>Finish the game and the bracket updates itself</li>
           </ol>
           <div class="url">${esc(url)}</div>
         </div>
       </div></div>`;
+  }
+
+  // ------------------------------------------------------------ stats centre
+  function slideStats() {
+    const cards = Stats.cards(data.state).slice(0, 8);
+    const html = cards.map((c) => `
+      <div class="scard ${c.key === 'worstAvg' || c.key === 'mostBusts' ? 'spoon' : ''}">
+        <div class="stitle">${esc(c.title)}</div>
+        <div class="sval">${esc(String(c.value))}</div>
+        <div class="swho">${flag(c.player.country)}<span>${esc(c.player.name)}</span></div>
+        <div class="squip">${esc(c.quip)}</div>
+      </div>`).join('');
+    return head('Stats <em>Centre</em>', ['<span class="chip">From the phone scorers</span>', '<span class="chip ghost">Numbers don\'t lie. People do.</span>']) +
+      `<div class="slide-body"><div class="sgrid n${cards.length}">${html}</div></div>`;
   }
 
   // ------------------------------------------------------------ pundits
@@ -494,43 +533,77 @@ window.Display = (function () {
   }
 
   // ------------------------------------------------------------ ticker
-  let tickerX = 0;
-  let tickerW = 0;
+  // Each line is written just before it scrolls on, so it is always current
+  // ("LIVE on Table 2…" is only ever about games that are actually on).
+  // Brand-new headlines jump the queue.
+  let tickerX = null;
   let lastFrame = 0;
+  let tickerQueue = [];
+  let tickerStale = true;
+  const tickerNews = [];
+  const recentlyShown = [];
   const SPEED = 150; // stage px per second
 
-  function buildTicker() {
-    if (!data) return '';
+  function buildTickerQueue() {
     const st = data.state;
-    const recent = st.feed.slice(-10).reverse().map((f) => f.text);
-    const fillers = Commentary.fillerLines(st, data.derived).sort(() => Math.random() - 0.5);
+    const recent = st.feed.slice(-8).reverse().map((f) => f.text);
+    const fillers = Commentary.fillerLines(st, data.derived).concat(window.Stats ? Stats.tickerLines(st) : [])
+      .sort(() => Math.random() - 0.5);
     const items = [];
-    // Interleave latest news with filler so results keep coming round.
     const n = Math.max(recent.length, fillers.length);
     for (let i = 0; i < n; i++) {
-      if (recent[i]) items.push(recent[i]);
       if (fillers[i]) items.push(fillers[i]);
+      if (recent[i] && i % 2 === 0) items.push(recent[i]);
     }
-    const newest = st.feed[st.feed.length - 1];
-    const breaking = newest && Date.now() - newest.ts < 3 * 60 * 1000;
-    tickerLabel.textContent = breaking ? 'BREAKING' : 'LATEST';
-    tickerLabel.classList.toggle('breaking', !!breaking);
-    return items.map((t) => `<span>${esc(t)}</span>`).join('<span class="sep">◆</span>') + '<span class="sep">◆</span>';
+    const fresh = items.filter((t) => !recentlyShown.includes(t));
+    return fresh.length ? fresh : items;
+  }
+
+  function nextTickerItem() {
+    let text = tickerNews.shift();
+    if (!text) {
+      if (tickerStale || !tickerQueue.length) {
+        tickerQueue = buildTickerQueue();
+        tickerStale = false;
+      }
+      text = tickerQueue.shift() || 'Club Thirty';
+    }
+    recentlyShown.push(text);
+    if (recentlyShown.length > 14) recentlyShown.shift();
+    const el = document.createElement('span');
+    el.className = 'ti';
+    el.innerHTML = `${esc(text)}<span class="sep">◆</span>`;
+    return el;
   }
 
   function tickerFrame(t) {
     const dt = lastFrame ? Math.min((t - lastFrame) / 1000, 0.1) : 0;
     lastFrame = t;
-    if (data) {
-      if (!tickerW || tickerX < -tickerW) {
-        tickerText.innerHTML = buildTicker();
-        tickerW = tickerText.scrollWidth;
-        tickerX = tickerText.parentElement.clientWidth;
-      }
+    const track = tickerText.parentElement.clientWidth;
+    // Only run while the TV is actually showing (it has no size when hidden).
+    if (data && track > 0) {
+      if (tickerX === null) tickerX = track;
       tickerX -= SPEED * dt;
+      // Drop lines that have scrolled off the left…
+      let first = tickerText.firstElementChild;
+      while (first && tickerX + first.offsetWidth < 0) {
+        tickerX += first.offsetWidth;
+        first.remove();
+        first = tickerText.firstElementChild;
+      }
+      // …and write new ones just before they appear on the right.
+      for (let i = 0; i < 20 && tickerX + tickerText.scrollWidth < track + 40; i++) tickerText.appendChild(nextTickerItem());
       tickerText.style.transform = `translateX(${tickerX}px)`;
     }
     requestAnimationFrame(tickerFrame);
+  }
+
+  function updateTickerLabel() {
+    const st = data.state;
+    const newest = st.feed[st.feed.length - 1];
+    const breaking = newest && Date.now() - newest.ts < 3 * 60 * 1000;
+    tickerLabel.textContent = breaking ? 'BREAKING' : 'LATEST';
+    tickerLabel.classList.toggle('breaking', !!breaking);
   }
 
   return { init, resize };

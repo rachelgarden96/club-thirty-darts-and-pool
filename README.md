@@ -91,6 +91,10 @@ After a match, both players can give a **post-match interview** from the phone. 
 
 **Relationships and rivalries:** at the bottom of *Players & tables* you can tell the pundits who's a couple, siblings, best mates, housemates, workmates, family or sworn rivals. The commentary picks up on it when they play each other (or could meet later).
 
+**Stats Centre:** every game scored on a phone is logged (3-dart averages, highest visit, 180s, 100+ visits, checkouts, busts, balls potted and frame times). A *Stats Centre* slide and the ticker show the leaders, and the wooden spoon. Games entered only in the Control Room don't have stats.
+
+**QR poster:** in **Settings**, enter the guest Wi-Fi name (and password, if any). The QR slide then shows a "join the Wi-Fi" step and code, and **⬇ Download QR poster (JPEG)** makes a printable A4 poster. Make the poster on the night, once the laptop is on the party Wi-Fi, because the scorer address depends on the network.
+
 **Bracket zoom:** by default the bracket hides rounds once they're finished, so the rest of the tournament gets bigger on the TV. To always show the whole bracket, change *Bracket view* in **Settings**.
 
 ## Never lose the standings

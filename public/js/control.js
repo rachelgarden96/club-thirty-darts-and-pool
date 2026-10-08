@@ -290,7 +290,7 @@ window.Control = (function () {
   function renderSettings() {
     const s = data.state.settings;
     const sv = data.server;
-    const slideNames = { poolBracket: 'Pool bracket + standings', dartsBracket: 'Darts bracket + standings', nowPlaying: 'Now playing', upNext: 'Up next (flashing names)', pundits: 'Pundits\' verdict & odds', quotes: 'Post-match interviews (once there are some)', qr: 'QR code for phone scoring' };
+    const slideNames = { poolBracket: 'Pool bracket + standings', dartsBracket: 'Darts bracket + standings', nowPlaying: 'Now playing', upNext: 'Up next (flashing names)', pundits: 'Pundits\' verdict & odds', quotes: 'Post-match interviews (once there are some)', stats: 'Stats Centre (from phone-scored games)', qr: 'QR code for phone scoring' };
     return `<div class="cols">
       <div class="card">
         <h2>📺 The show</h2>
@@ -318,6 +318,11 @@ window.Control = (function () {
         <p class="muted">Phones must be on the <b>same Wi-Fi</b> as this computer. Detected addresses: ${sv.lan.map((ip) => `<code>${esc(ip)}</code>`).join(', ') || '<b>none found, are you on Wi-Fi?</b>'}</p>
         <label>Override address <small>(only if the QR code doesn't work, e.g. http://192.168.1.20:${sv.port})</small>
           <input type="text" id="set-url" data-set="publicUrl" value="${esc(s.publicUrl)}" placeholder="Automatic"></label>
+        <h3>Guest Wi-Fi (shown on the QR slide and poster)</h3>
+        <label>Wi-Fi name<input type="text" id="set-wifi" data-set="wifiName" value="${esc(s.wifiName || '')}" placeholder="e.g. Club Thirty Guest"></label>
+        <label>Wi-Fi password <small>(optional: adds a "scan to join the Wi-Fi" code)</small><input type="text" id="set-wifipw" data-set="wifiPassword" value="${esc(s.wifiPassword || '')}" placeholder="Leave blank if it has none"></label>
+        <p><button class="btn primary" data-action="poster">⬇ Download QR poster (JPEG)</button></p>
+        <p class="hint">Make the poster on the night, once the laptop is on the party Wi-Fi: the scorer address depends on the network.</p>
 
         <h2>💾 Backup &amp; restore</h2>
         <p class="muted">Everything is saved to disk the moment it changes, with a timestamped backup of every change in<br><code>${esc(sv.dataDir)}</code></p>
@@ -494,6 +499,14 @@ window.Control = (function () {
       await act('startMatch', { eventId: ev.id, matchId: sel.value, venueId: b.dataset.vid });
     } else if (a === 'quickTick') {
       if (await act('addFeed', { text: QUICK[Number(b.dataset.i)] })) toast('Posted to the ticker');
+    } else if (a === 'poster') {
+      const url = await posterDataUrl();
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'club-thirty-scorer-qr.jpg';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
     } else if (a === 'addRel') {
       const A = document.getElementById('rel-a').value;
       const B = document.getElementById('rel-b').value;
@@ -514,5 +527,100 @@ window.Control = (function () {
     }
   }
 
-  return { init };
+  // ------------------------------------------------------------ printable QR poster
+  function loadImage(src) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => resolve(null);
+      img.src = src;
+    });
+  }
+
+  function drawQr(ctx, text, x, y, size) {
+    const qr = qrcode(0, 'M');
+    qr.addData(text);
+    qr.make();
+    const n = qr.getModuleCount();
+    const quiet = 4;
+    const cell = size / (n + quiet * 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(x, y, size, size);
+    ctx.fillStyle = '#000000';
+    for (let r = 0; r < n; r++) {
+      for (let c = 0; c < n; c++) {
+        if (qr.isDark(r, c)) ctx.fillRect(Math.floor(x + (c + quiet) * cell), Math.floor(y + (r + quiet) * cell), Math.ceil(cell), Math.ceil(cell));
+      }
+    }
+  }
+
+  // A4 portrait poster (150 dpi): logo, Wi-Fi details/code and the scorer code.
+  async function posterDataUrl(opts = {}) {
+    const s = data.state.settings;
+    const url = opts.url || data.server.scoreUrl;
+    const wifi = (s.wifiName || '').trim();
+    const W = 1240;
+    const H = 1754;
+    const c = document.createElement('canvas');
+    c.width = W;
+    c.height = H;
+    const ctx = c.getContext('2d');
+    try { await Promise.all(['700 60px Montserrat', '600 40px Montserrat', '700 60px "Barlow Condensed"'].map((f) => document.fonts.load(f))); } catch (e) { /* fall back */ }
+    ctx.fillStyle = '#fbf4f1';
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#a84d68';
+    ctx.fillRect(0, 0, W, 18);
+    ctx.fillRect(0, H - 18, W, 18);
+    const logo = await loadImage('/img/club-thirty.png');
+    if (logo) {
+      const lh = 280;
+      const lw = (logo.width / logo.height) * lh;
+      ctx.drawImage(logo, (W - lw) / 2, 70, lw, lh);
+    }
+    const centre = (text, y, font, colour) => {
+      ctx.font = font;
+      ctx.fillStyle = colour;
+      ctx.textAlign = 'center';
+      ctx.fillText(text, W / 2, y);
+    };
+    centre('KEEP SCORE ON YOUR PHONE', 430, '700 54px Montserrat, Arial', '#5e7a55');
+    let y = 490;
+    const step = (num, title, sub) => {
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#a84d68';
+      ctx.beginPath();
+      ctx.arc(150, y + 30, 34, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.font = '700 40px Montserrat, Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(String(num), 150, y + 44);
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#4a2232';
+      ctx.font = '700 42px Montserrat, Arial';
+      ctx.fillText(title, 210, y + 30);
+      if (sub) {
+        ctx.font = '600 32px Montserrat, Arial';
+        ctx.fillStyle = '#8d6170';
+        ctx.fillText(sub, 210, y + 76);
+      }
+    };
+    if (wifi) {
+      step(1, `Join the Wi-Fi: ${wifi}`, s.wifiPassword ? `Password: ${s.wifiPassword}  ·  or scan this code` : 'No password needed: just scan or connect');
+      drawQr(ctx, App.wifiQrText(wifi, s.wifiPassword), (W - 320) / 2, y + 110, 320);
+      y += 470;
+    } else {
+      step(1, 'Connect to the guest Wi-Fi', 'Phones must be on the same Wi-Fi as the tournament laptop');
+      y += 150;
+    }
+    step(2, 'Scan to open the scorer', 'Pick your match: the rules are set up for you');
+    const qs = wifi ? 440 : 640;
+    drawQr(ctx, url, (W - qs) / 2, y + 110, qs);
+    y += 110 + qs + 60;
+    centre(url, y, '600 34px Montserrat, Arial', '#a84d68');
+    centre('Darts & Pool Championship', H - 60, '600 30px Montserrat, Arial', '#5e7a55');
+    return c.toDataURL('image/jpeg', 0.92);
+  }
+
+  return { init, posterDataUrl };
 })();

@@ -12,6 +12,10 @@
     'Mystic Maureen',
     'Ron Sixty-Seven',
     'Big Kev Chalkley',
+    'Sir Trevor Doubletop',
+    'Auntie Pat (no relation)',
+    'Gaz "The Gaffer" Gilchrist',
+    'Dr Jen Cushionsworth',
   ];
   const BOOKIES = ['Paddy Powerless', 'BetFrayed', 'William Hillbilly', 'Ladbrokes-ish', 'Coral Reefer'];
 
@@ -50,6 +54,15 @@
     '"The trick is to hit the ball you meant to hit. Revolutionary, I know."',
     '"Never trust anyone who chalks their cue between every shot. They are stalling. Or hiding something."',
     '"Some of these players have the throwing action of someone feeding ducks."',
+    '"Darts is a simple game. Throw the pointy end at the board. Somehow, people are still getting this wrong."',
+    '"I\'ve got a good feeling about this round. I had a good feeling about the last round too. I was wrong."',
+    '"Statistically, someone has to win. That\'s the only stat I\'m confident in."',
+    '"The pool table is a cruel mistress. And the cushions are her henchmen."',
+    '"You don\'t win a game like this with your arm. You win it with your soul. And your arm, to be fair."',
+    '"I would never say someone is out of form. I would, however, say they have never been in it."',
+    '"Some of tonight\'s technique has been described as experimental. By me. Just now."',
+    '"Confidence is everything. That\'s why I always throw after three pints and never before."',
+    '"Big night for the sport. Small night for the dartboard\'s self-esteem."',
   ];
 
   const HOUSE_RULES = [
@@ -65,10 +78,20 @@
         'DOMESTIC INCIDENT on {V}: {W} beats partner {L}{Sx}. The sofa has been made up for tonight.',
         'Relationship status: complicated. {W} shows their other half {L} absolutely no mercy.',
         '"Till death do us part" does not apply on the {E} {VL}. {W} knocks out partner {L}.',
+        '{W} beats {L}{Sx}. Couples therapist on standby. Couples therapist also knocked out earlier.',
+        '{L} has been beaten by their other half. Expect to hear about this at every family gathering until 2050.',
+        '{W} wins the domestic derby. {L} is reportedly "absolutely fine about it". {L} is not fine about it.',
       ],
       preview: [
         'COUPLES COUNSELLING on {V}: {A} v {B}. Separate taxis home have been booked as a precaution.',
         '{A} v {B} on {V}. Whoever loses is doing the dishes until Christmas.',
+        'LOVE IS IN THE AIR on {V}: {A} v {B}. So is tension. Mostly tension.',
+        '{A} v {B} on {V}. One of them is getting the silent treatment in the taxi.',
+      ],
+      collision: [
+        'COLLISION COURSE: {A} and {B} are both still in the {E}. If they meet, someone is sleeping in the spare room.',
+        'DOMESTIC DISPUTE BREWING: {A} and {B} are on course to meet in the {E}. The pundits have booked them separate taxis home.',
+        '{P}: "If {Af} and {Bf} meet in the {E}, I want it on pay-per-view."',
       ],
     },
     siblings: {
@@ -76,10 +99,18 @@
       result: [
         'Sibling rivalry settled: {W} beats {L}{Sx}. Mum\'s phone is already ringing.',
         '{W} finally gets one over on their sibling {L}. Family WhatsApp is in meltdown.',
+        '{W} beats sibling {L}{Sx}. This is going straight in the family Christmas card.',
+        'Sibling rivalry update: {W} 1, {L} 0. {L} has demanded a rematch "at Mum and Dad\'s".',
       ],
       preview: [
         'SIBLING SHOWDOWN on {V}: {A} v {B}. Decades of "they started it" settled tonight.',
         '{A} v {B}. Blood is thicker than water, but is it thicker than a pint of lager? We\'re about to find out.',
+        'THE FAMILY BUSINESS on {V}: {A} v {B}. Somebody\'s getting told about it at Sunday lunch.',
+      ],
+      collision: [
+        'FAMILY FEUD ALERT: {A} and {B} are both still in the {E}. Mum has been warned to stay out of it.',
+        '{A} and {B} are on a sibling collision course in the {E}. Thirty years of "that\'s not fair" could be settled tonight.',
+        '{P}: "Shared a bedroom, shared a bath, about to share a {E} table. Brutal."',
       ],
     },
     mates: {
@@ -87,10 +118,18 @@
       result: [
         '{W} knocks out best mate {L}{Sx}. Friendship status: under review.',
         '"It\'s only a game," says {L}, lying, after losing to best mate {W}.',
+        '{W} beats best mate {L}{Sx}. They\'ll still be mates. Probably. Give it a week.',
+        'Friendship tested: {W} knocks out {L}. The group chat has gone suspiciously quiet.',
       ],
       preview: [
         'BEST MATES COLLIDE on {V}: {A} v {B}. Friendship bracelets have been removed for the duration.',
         '{A} v {B}. Best mates. Not for the next fifteen minutes.',
+        '{A} v {B} on {V}. Best mates for years, enemies for one game.',
+      ],
+      collision: [
+        'BROMANCE OR BLOODBATH? {A} and {B} are both still in the {E} and heading for each other.',
+        '{A} and {B} are both through. If they meet in the {E}, the group chat will never recover.',
+        '{P}: "Best mates on a collision course in the {E}. I\'ve seen friendships end over less. Much less. A sausage roll once."',
       ],
     },
     housemates: {
@@ -98,9 +137,15 @@
       result: [
         '{W} beats housemate {L}{Sx}. The washing-up rota has been renegotiated accordingly.',
         'Awkward breakfast incoming: {W} sends housemate {L} packing.',
+        '{W} beats housemate {L}{Sx}. The TV remote now belongs to {Wf}.',
       ],
       preview: [
         'HOUSEMATE DERBY on {V}: {A} v {B}. Loser buys the next loo roll.',
+        '{A} v {B} on {V}. Loser takes the bins out for a month.',
+      ],
+      collision: [
+        'HOUSEMATE HOSTILITIES: {A} and {B} are both still in the {E}. The fridge shelf allocation is at stake.',
+        '{A} and {B} live together and could meet in the {E}. One of them is getting the small bedroom.',
       ],
     },
     workmates: {
@@ -108,10 +153,16 @@
       result: [
         '{W} beats colleague {L}{Sx}. Monday\'s team meeting just got very awkward.',
         '{L} will be "working from home" on Monday after losing to workmate {W}.',
+        '{W} beats colleague {L}{Sx}. This will be mentioned in every meeting until retirement.',
       ],
       preview: [
         'OFFICE DERBY on {V}: {A} v {B}. HR are monitoring the situation.',
         '{A} v {B}. Somebody\'s getting a passive-aggressive email on Monday.',
+        '{A} v {B} on {V}. Whoever loses makes the tea for the rest of the year.',
+      ],
+      collision: [
+        'OFFICE POLITICS: colleagues {A} and {B} are both still in the {E}. Somebody\'s annual review just got interesting.',
+        '{A} and {B} could meet in the {E}. HR have prepared a statement.',
       ],
     },
     family: {
@@ -119,9 +170,15 @@
       result: [
         'Generational warfare: {W} beats {L}{Sx}. Inheritance plans are being reviewed.',
         '{W} beats family member {L}. Christmas seating plan updated.',
+        '{W} beats {L}{Sx}. The family trophy cabinet has been rearranged.',
       ],
       preview: [
         'FAMILY FEUD on {V}: {A} v {B}. Pocket money is on the line.',
+        '{A} v {B} on {V}. Generations collide. Respect your elders? Not tonight.',
+      ],
+      collision: [
+        'FAMILY TIES: {A} and {B} are both still in the {E}. Somebody\'s getting written out of the will.',
+        '{A} and {B} could meet in the {E}. Family gatherings will never be the same.',
       ],
     },
     rivals: {
@@ -129,10 +186,17 @@
       result: [
         'GRUDGE MATCH settled: {W} beats sworn rival {L}{Sx}. Mic drop.',
         'The feud continues: {W} takes this round against {L}. The sequel is already in development.',
+        '{W} beats sworn rival {L}{Sx}. Petty? Yes. Satisfying? Enormously.',
       ],
       preview: [
         'GRUDGE MATCH on {V}: {A} v {B}. This one is personal.',
         '{A} v {B}. They say they\'re "fine". They are not fine.',
+        '{A} v {B} on {V}. Pistols at dawn. Well, cues and darts at 9pm.',
+      ],
+      collision: [
+        'GRUDGE MATCH LOOMING: sworn rivals {A} and {B} are both still in the {E}. Fasten your seatbelts.',
+        '{A} and {B} are on course to meet in the {E}. They\'ve been avoiding eye contact all night.',
+        '{P}: "{Af} v {Bf} in the {E} would be the biggest rivalry since cats and Hoovers."',
       ],
     },
   };
@@ -228,6 +292,13 @@
     'TACTICS BOARD: {W}\'s game plan against {L} was simple: hit the thing. Revolutionary stuff.',
     '{L} has requested a VAR review. There is no VAR. There never was.',
     '{L} is out but remains the bookies\' favourite for "Best Excuse of the Night".',
+    '{P}: "{Lf} brought the vibes. Unfortunately, not the skill."',
+    'EXPERT VERDICT on {L}: a bold performance. Bold in the sense that nothing went to plan.',
+    '{P}: "{Wf} played the percentages. {Lf} played the lottery."',
+    '{W} beats {L}. Our analysts have reviewed the footage and filed it under "comedy".',
+    '{P}: "I\'ve seen {Lf} play better. I can\'t remember when, but I\'m sure I have."',
+    '{L} goes out swinging. Mostly swinging at air.',
+    'MAN OF THE MATCH, WOMAN OF THE MATCH, PERSON OF THE MATCH: {W}. Sorry {Lf}.',
   ];
   const ROASTS_DARTS = [
     '{P} on {L}: "Some of those darts were in the right postcode. Just not on the right board."',
@@ -247,6 +318,10 @@
     'BREAKING: {L} has announced their retirement from {E}. Again. Third time this year.',
     '{L}\'s {E} coaching team has resigned with immediate effect. It was one person and they\'ve gone for a smoke.',
     'SPOTTED: {L} practising in the corner. Too late, {Lf}. Far too late.',
+    '{L} is out of the {E} but has been offered a role as "chief cheerleader". Pay is zero. Snacks are free.',
+    '{L}\'s {E} campaign: brief, brave, baffling.',
+    'LOST & FOUND: one {E} campaign belonging to {L}. Last seen in the first round.',
+    '{L} has been seen staring wistfully at the {E} bracket. Let it go, {Lf}. Let it go.',
   ];
 
   const GENERIC_RESULTS = {
@@ -489,7 +564,7 @@
         const A = ev.players.find((p) => p.name.trim().toLowerCase() === r.a.trim().toLowerCase());
         const B = ev.players.find((p) => p.name.trim().toLowerCase() === r.b.trim().toLowerCase());
         if (A && B && !out.has(A.id) && !out.has(B.id) && RELATIONSHIPS[r.type]) {
-          lines.push(`COLLISION COURSE: ${A.name} and ${B.name} (${RELATIONSHIPS[r.type].label.replace(/ 💕/, '').toLowerCase()}) are both still in the ${ev.name}. Imagine the scenes if they meet.`);
+          lines.push(fill(pick(RELATIONSHIPS[r.type].collision), { A: A.name, B: B.name, Af: firstName(A), Bf: firstName(B), E: ev.name, P: pick(PUNDITS) }));
         }
       }
     }
@@ -536,6 +611,10 @@
           '"Hands like a surgeon. Temperament like a surgeon. Possibly is a surgeon."',
           `"I've seen ${firstName(fav.player)} warm up. I had to sit down afterwards."`,
           '"Ice in the veins. Lager in the glass. A deadly combination."',
+          `"${firstName(fav.player)} doesn't play the game. The game plays along with ${firstName(fav.player)}."`,
+          `"Every time ${firstName(fav.player)} walks up, the room goes quiet. Partly respect, partly fear, partly the toilet queue."`,
+          '"The favourite for a reason. The reason is mostly confidence, but still."',
+          `"I've put my house on ${firstName(fav.player)}. Not literally. I rent."`,
         ], seed),
         pundit: pick(PUNDITS, seed),
       });
@@ -549,6 +628,9 @@
             '"Unseeded, unfancied, unbothered. Dangerous combination."',
             `"Write ${firstName(dark.player)} off at your peril. I did once. Never again."`,
             '"Quiet. Too quiet. That\'s the quiet of somebody about to win a tournament."',
+            `"${firstName(dark.player)} has the look of somebody who practised in secret. In a shed. For years."`,
+            '"Long odds, short memory. That\'s what you need. Ask me how I know."',
+            `"Don't sleep on ${firstName(dark.player)}. I did, earlier, on a sofa. Missed a cracking game."`,
           ], seed + 1),
           pundit: pick(PUNDITS, seed + 3),
         });
@@ -563,6 +645,8 @@
             '"Raw talent. Very raw. Needs a bit more time in the oven, but the ingredients are there."',
             `"${firstName(prom.player)} is playing like someone who has had exactly the right number of drinks."`,
             '"You can\'t teach that. Well, you can, but it takes ages and nobody here has the patience."',
+            `"${firstName(prom.player)} is peaking at exactly the right time. About forty-five minutes ago."`,
+            '"Building momentum. Building confidence. Building a slightly concerning tab at the bar."',
           ], seed + 2),
           pundit: pick(PUNDITS, seed + 5),
         });
