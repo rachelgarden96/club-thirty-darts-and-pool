@@ -152,3 +152,63 @@ test('relationship banter kicks in when a couple meet', () => {
   const lines = Commentary.resultLines(s, ev, T.derive(s).pool, m);
   assert.ok(lines.some((l) => /partner|other half/i.test(l)), lines.join(' | '));
 });
+
+test('earlier rounds are played before later ones', () => {
+  const { s, ev } = setup(8, { seeds: 8, venues: 1 });
+  T.autoAssign(s);
+  for (const id of ['R1M1', 'R1M2']) {
+    const m = T.getMatch(ev, id);
+    if (m.status !== 'playing') T.startMatch(s, ev, id, 'v1');
+    T.setResult(s, ev, id, m.p1, '');
+    T.autoAssign(s);
+  }
+  // R2M1 is ready now, but the remaining first-round games come first.
+  assert.strictEqual(T.getMatch(ev, 'R2M1').status, 'ready');
+  assert.strictEqual(ev.matches.find((m) => m.status === 'playing').round, 1);
+});
+
+test('the final is only ever played on the first table', () => {
+  const { s, ev } = setup(4, { seeds: 4, venues: 2 });
+  T.autoAssign(s);
+  const [a, b] = ev.matches.filter((m) => m.round === 1);
+  // First semi finishes on table 1, second on table 2: final must wait for table 1 not table 2.
+  const onV1 = a.venueId === 'v1' ? a : b;
+  const onV2 = onV1 === a ? b : a;
+  T.setResult(s, ev, onV2.id, onV2.p1, '');
+  T.autoAssign(s);
+  T.setResult(s, ev, onV1.id, onV1.p1, '');
+  T.autoAssign(s);
+  const final = ev.matches.find((m) => m.round === 2);
+  assert.strictEqual(final.status, 'playing');
+  assert.strictEqual(final.venueId, 'v1');
+  assert.strictEqual(T.derive(s).pool.upNext.find((u) => u.venueId === 'v2').freePlay, true);
+});
+
+test('spare tables are flagged for free play', () => {
+  const { s } = setup(4, { seeds: 4, venues: 3 });
+  T.autoAssign(s);
+  const d = T.derive(s).pool;
+  assert.deepStrictEqual(d.freePlay, ['v3']);
+});
+
+test('people who know each other follow one another on the same table', () => {
+  // 16 players so round 1 is "early" (Last 16). Seed order pairs: R1M1 = 1v16 ... R1M8.
+  const { s, ev } = setup(16, { seeds: 16, venues: 1 });
+  const m8 = T.getMatch(ev, 'R1M8');
+  const friend = T.playerById(ev, m8.p1).name;
+  T.autoAssign(s);
+  const first = ev.matches.find((m) => m.status === 'playing');
+  s.relationships = [{ id: 'r', a: T.playerById(ev, first.p1).name, b: friend, type: 'mates' }];
+  assert.strictEqual(T.derive(s).pool.upNext[0].nextId, 'R1M8', 'predicted next is the friend\'s match');
+  T.setResult(s, ev, first.id, first.p1, '');
+  T.autoAssign(s);
+  assert.strictEqual(m8.status, 'playing');
+  assert.strictEqual(m8.venueId, 'v1');
+});
+
+test('an idle table is free play while games it cannot host are still being decided', () => {
+  // 6 players, 3 tables: two quarter-finals on, semis waiting on them.
+  const { s } = setup(6, { seeds: 6, venues: 3 });
+  T.autoAssign(s);
+  assert.deepStrictEqual(T.derive(s).pool.freePlay, ['v3']);
+});

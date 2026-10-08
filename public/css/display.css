@@ -510,3 +510,7 @@ body.tv-only #display, body.is-fs #display { height: 100vh; }
 .qgrid.n2 .qq { font-size: 58px; }
 .qwho { display: flex; align-items: center; gap: 12px; font-size: 32px; font-weight: 800; color: var(--deep-rose); text-transform: uppercase; }
 .stage.theme-dark .qwho { color: var(--blush); }
+
+.vcard.freeplay { opacity: 1; border-left-color: var(--deep-sage); }
+.vcard.freeplay .free-msg { color: var(--deep-sage); font-style: normal; font-weight: 700; }
+.stage.theme-dark .vcard.freeplay .free-msg { color: var(--sage); }

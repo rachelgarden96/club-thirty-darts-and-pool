@@ -494,6 +494,16 @@
       }
     }
     if (evs.length) lines.push(pick(HOUSE_RULES));
+    for (const ev of evs) {
+      const names = (derived[ev.id].freePlay || []).map((id) => (ev.venues.find((v) => v.id === id) || {}).name).filter(Boolean);
+      if (!names.length) continue;
+      const V = names.join(' & ');
+      lines.push(fill(pick([
+        'FREE PLAY: {V} {is} open. Grab {kit}, no pressure. (Everybody\'s watching.)',
+        '🎉 {V} {is} open for free play. Perfect time to practise that "lucky" shot you keep talking about.',
+        'FREE PLAY on {V}. {P}: "This is where legends are made. Or where people knock over drinks."',
+      ]), { V, is: names.length > 1 ? 'are' : 'is', kit: ev.id === 'pool' ? 'a cue' : 'some darts', P: pick(PUNDITS) }));
+    }
 
     const top = Object.entries(countriesAlive).sort((a, b) => b[1] - a[1])[0];
     if (top && top[1] >= 2) lines.push(`${country(top[0]).toUpperCase()} has ${top[1]} players still in it. The ambassador has been informed.`);

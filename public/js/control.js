@@ -207,7 +207,7 @@ window.Control = (function () {
       const nx = u && u.nextId ? ev.matches.find((x) => x.id === u.nextId) : null;
       const nextLine = nx ? `<div class="vnext">Next: ${pname(ev, nx.p1)} v ${pname(ev, nx.p2)}${songsLine(ev, nx)}</div>` : '';
       if (!m) {
-        return `<div class="vbox free"><div class="vtitle">${esc(v.name)} <span class="badge">FREE</span></div>
+        return `<div class="vbox free"><div class="vtitle">${esc(v.name)} ${(d.freePlay || []).includes(v.id) ? '<span class="badge done">OPEN FOR FREE PLAY</span>' : '<span class="badge">FREE</span>'}</div>
           ${ready.length ? `<div class="startrow"><select id="start-${v.id}">${ready.map((r) => `<option value="${r.id}">${pname(ev, r.p1)} v ${pname(ev, r.p2)}${r.hold ? ' (on hold)' : ''}</option>`).join('')}</select>
           <button class="btn small" data-action="startHere" data-ev="${ev.id}" data-vid="${v.id}">▶ Start here</button></div>` : '<div class="muted">Nobody ready to play yet.</div>'}
           ${nextLine}</div>`;

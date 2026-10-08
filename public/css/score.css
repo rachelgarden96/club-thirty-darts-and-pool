@@ -177,3 +177,15 @@ label input { display: block; width: 100%; margin-top: 4px; padding: 12px; font-
 .quotes { text-align: left; margin-top: 14px; }
 .quotes label { font-size: 14px; }
 .quotes textarea { display: block; width: 100%; margin-top: 4px; padding: 10px; font-size: 16px; border-radius: 8px; border: 1px solid var(--line-2); background: var(--panel); color: var(--ink); resize: vertical; }
+
+/* next up / free play */
+.nextup { text-align: center; background: var(--panel); border: 2px solid var(--gold); border-radius: 12px; padding: 14px; margin: 14px 0; box-shadow: 0 0 0 4px rgba(205, 168, 90, .25); animation: nudge 1.2s ease-in-out 3; }
+.nextup.free { border-color: var(--deep-sage); box-shadow: 0 0 0 4px rgba(167, 196, 160, .35); }
+.nu-h { font-family: var(--brand); font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--deep-rose); }
+.nextup.free .nu-h { color: var(--deep-sage); }
+.nu-p { font-family: var(--cond); font-size: 30px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.nu-v { font-size: 12px; color: var(--ink-soft); letter-spacing: .2em; text-transform: uppercase; }
+.nextup p { margin: 8px 0 0; font-size: 15px; }
+@keyframes nudge { 50% { transform: scale(1.03); } }
+.freeplay { background: rgba(167, 196, 160, .35); border: 1px solid var(--deep-sage); color: #2f4a28; border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; font-size: 15px; }
+.theme-dark .freeplay { color: var(--ink); }

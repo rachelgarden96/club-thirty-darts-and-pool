@@ -109,9 +109,21 @@
       }).join('');
       return `<h2>${k === 'darts' ? '🎯' : '🎱'} ${esc(ev.name)}</h2>${items || '<p class="muted">No matches waiting right now.</p>'}`;
     }).join('');
+    const free = [];
+    for (const k of ['pool', 'darts']) {
+      const ev = data.state.events[k];
+      if (!ev.generated) continue;
+      for (const vid of data.derived[k].freePlay || []) {
+        const v = ev.venues.find((x) => x.id === vid);
+        if (v) free.push(v.name);
+      }
+    }
+    const freeBanner = free.length
+      ? `<div class="freeplay">🎉 <b>${esc(free.join(' & '))}</b> ${free.length > 1 ? 'are' : 'is'} open for free play. Grab a cue or some darts and have a knock-about!</div>` : '';
     const resume = g && (g.winner == null) ? `<button class="btn-wide yellow" data-go="resume">↩ Back to your game: ${esc(g.names[0])} v ${esc(g.names[1])}</button>` : '';
     app.innerHTML = `<div class="pad">
       ${resume}
+      ${freeBanner}
       <p class="lead">Pick your match. The rules are set up for you, the score shows live on the TV, and the winner goes straight into the bracket.</p>
       ${sections || '<p class="muted">The draw hasn\'t been made yet. You can still play a free game.</p>'}
       <h2>🎲 Just for fun</h2>
@@ -486,6 +498,39 @@
     return `${g.frames[0]}-${g.frames[1]}`;
   }
 
+  function sideName(ev, m, side) {
+    const p = player(ev, m[side]);
+    if (p) return `${flag(p.country)} ${esc(p.name)}`;
+    const feeders = data.derived[ev.id].feeders[m.id];
+    const f = ev.matches.find((x) => x.id === feeders[side === 'p1' ? 0 : 1]);
+    const a = f && player(ev, f.p1);
+    const b = f && player(ev, f.p2);
+    return `<span class="muted">Winner of ${a ? esc(a.name) : 'TBC'} v ${b ? esc(b.name) : 'TBC'}</span>`;
+  }
+
+  // Who's on next at the table this game was played on, so the players can go and fetch them.
+  function nextUpCard(lm) {
+    if (!lm || !lm.venueId || !data) return '';
+    const ev = data.state.events[g.link.eventId];
+    const v = ev.venues.find((x) => x.id === lm.venueId);
+    if (!v) return '';
+    const now = ev.matches.find((m) => m.status === 'playing' && m.venueId === v.id);
+    const u = data.derived[ev.id].upNext.find((x) => x.venueId === v.id);
+    const nx = now || (u && u.nextId ? ev.matches.find((m) => m.id === u.nextId) : null);
+    if (nx) {
+      const ready = nx.p1 && nx.p2;
+      return `<div class="nextup">
+        <div class="nu-h">📣 Next up on ${esc(v.name)}</div>
+        <div class="nu-p">${sideName(ev, nx, 'p1')}</div><div class="nu-v">vs</div><div class="nu-p">${sideName(ev, nx, 'p2')}</div>
+        <p>${ready ? `Please go and find them and send them to <b>${esc(v.name)}</b>!` : 'Still waiting on another game to finish. Keep an eye on the TV.'}</p>
+      </div>`;
+    }
+    if (u && u.freePlay) {
+      return `<div class="nextup free"><div class="nu-h">🎉 ${esc(v.name)} is now open for free play</div><p>No tournament games waiting for it. Fancy a knock-about?</p></div>`;
+    }
+    return '';
+  }
+
   function quoteBox(lm) {
     if (g.quoted) return '<div class="ok-box">🎤 Interview sent: watch the TV!</div>';
     const w = lm && lm.winner ? g.ids.indexOf(lm.winner) : g.winner;
@@ -520,6 +565,7 @@
       <div class="wn">${esc(g.names[w])} wins!</div>
       ${sub}
       ${linkPart}
+      ${recorded ? nextUpCard(lm) : ''}
       ${recorded ? quoteBox(lm) : ''}
       ${recorded || !g.history.length ? '' : `<button class="btn-wide ghost" id="undo">↶ Oops, undo the last ${undoLabel}</button>`}
       ${g.link ? '' : '<button class="btn-wide" id="again">🔁 Rematch</button>'}

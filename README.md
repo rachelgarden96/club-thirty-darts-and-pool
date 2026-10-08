@@ -39,7 +39,13 @@ In **⚙️ Settings & backup**, pick the **TV colour theme** (*Light*: cream an
 
 - Put the laptop on the TV and click **⛶ Full screen** (or press **F**).
   - Tip: if the TV is a second screen, open <http://localhost:3030/display> in a separate window on the TV and keep the Control Room on the laptop screen.
-- **Matches are put on tables automatically.** When a table or oche frees up, the next match in the queue goes on it. Somebody entered in both pool and darts is never called to two places at once.
+- **Matches are put on tables automatically.** When a table or oche frees up, the next match goes on it:
+  - **Earlier rounds first**, so the tournament keeps moving.
+  - **Finals are always on Table 1 and Oche 1.**
+  - **Friends follow friends:** in the early rounds, the next game on a table is, where possible, one with somebody who knows a player from the game just finished (from the *Relationships & rivalries* list), so the next pair are easy to find.
+  - **Spare tables go to free play:** a table with nothing to host is announced as "open for free play" on the TV, the ticker and the phones, and is left alone while there's another free table for the next game.
+  - Somebody entered in both pool and darts is never called to two places at once.
+- **After each game, the phone shows who's next on that table** ("📣 Next up on Table 2: A vs B, please go and find them!") or that the table is now open for free play.
 - **Entering results:** go to **Control Room → 2. Run the night**, optionally type the score, and click **🏆 the winner**. You can also enter results from a phone at `http://<laptop>:3030/control`.
 - **Mistakes:** click **↶ Undo** on any match. If later rounds depended on it, those are undone too.
 - **Not ready?** Use **⏸ send back to queue** and the next match takes the table instead.

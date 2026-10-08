@@ -329,7 +329,8 @@ window.Display = (function () {
       const cards = ev.venues.map((v) => {
         const m = ev.matches.find((x) => x.status === 'playing' && x.venueId === v.id);
         if (!m) {
-          return `<div class="vcard free"><div class="vh"><span class="vn">${esc(v.name)}</span></div><div class="free-msg">${d.champion ? 'Tournament complete' : 'Free · waiting for players'}</div></div>`;
+          const fp = (d.freePlay || []).includes(v.id);
+          return `<div class="vcard free ${fp ? 'freeplay' : ''}"><div class="vh"><span class="vn">${esc(v.name)}</span></div><div class="free-msg">${fp ? '🎉 Open for free play: help yourselves!' : 'Free · waiting for players'}</div></div>`;
         }
         const live = liveFor(ev, m);
         const s = live && live.summary;
@@ -369,7 +370,7 @@ window.Display = (function () {
         const m = ev.matches.find((x) => x.id === u.nextId);
         const cur = ev.matches.find((x) => x.id === u.currentId);
         if (!m) {
-          return `<div class="vcard free upcard"><div class="vh"><span class="vn">${esc(v.name)}</span></div><div class="free-msg">Nothing queued yet</div></div>`;
+          return `<div class="vcard free upcard ${u.freePlay ? 'freeplay' : ''}"><div class="vh"><span class="vn">${esc(v.name)}</span></div><div class="free-msg">${u.freePlay ? '🎉 Open for free play: help yourselves!' : 'Nothing queued yet'}</div></div>`;
         }
         shown.add(m.id);
         return `<div class="vcard upcard ${ev.venues.length > 3 ? 'compact' : ''}">
