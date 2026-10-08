@@ -538,19 +538,6 @@ body.tv-only #display, body.is-fs #display { height: 100vh; }
 .vcard.compact .vs-sep { font-size: 13px; }
 .vcard.compact .lsum, .vcard.compact .after { font-size: 19px; margin-top: 2px; }
 
-/* QR slide with the Wi-Fi code */
-.qr-col { display: flex; flex-direction: column; align-items: center; gap: 22px; }
-.qr-cap { font-family: var(--brand); font-size: 26px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--deep-sage); }
-.stage.theme-dark .qr-cap { color: var(--sage); }
-.qr-wrap.with-wifi { gap: 64px; }
-.qr-wrap.with-wifi .qr-box svg { width: 470px; height: 470px; }
-.qr-wrap.with-wifi .qr-col.small .qr-box svg { width: 300px; height: 300px; }
-.qr-wrap.with-wifi .qr-text { max-width: 700px; }
-.qr-wrap.with-wifi .qr-text h2 { font-size: 52px; }
-.qr-wrap.with-wifi .qr-text li { font-size: 34px; }
-.qr-text li b { color: var(--deep-rose); }
-.stage.theme-dark .qr-text li b { color: var(--blush); }
-
 /* ---------- Stats centre ---------- */
 .sgrid { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 1fr; gap: 20px; height: 100%; }
 .sgrid.n1, .sgrid.n2 { grid-template-columns: repeat(2, 1fr); }

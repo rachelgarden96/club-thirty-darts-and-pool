@@ -70,14 +70,8 @@
       .map(([c, n]) => `<option value="${c}"${c === selected ? ' selected' : ''}>${esc(n)}</option>`).join('');
   }
 
-  // Text for a "join this Wi-Fi" QR code (understood by iPhone and Android cameras).
-  function wifiQrText(name, password) {
-    const e = (v) => String(v || '').replace(/([\\;,:"])/g, '\\$1');
-    return password ? `WIFI:T:WPA;S:${e(name)};P:${e(password)};;` : `WIFI:T:nopass;S:${e(name)};;`;
-  }
-
   window.App = {
-    connect, act, toast, esc, flag, player, parseScore, countryOptions, wifiQrText,
+    connect, act, toast, esc, flag, player, parseScore, countryOptions,
     onUpdate: (fn) => { listeners.push(fn); if (last) fn(last); },
     get last() { return last; },
   };

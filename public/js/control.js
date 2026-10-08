@@ -276,7 +276,7 @@ window.Control = (function () {
     return `<div class="card">
       <h2>📣 Post to the ticker</h2>
       <p class="muted">Your message scrolls along the bottom of the TV and pops up as a "BREAKING" banner.</p>
-      <form class="tickform"><textarea id="tick-text" rows="2" maxlength="280" placeholder="e.g. Taxi for Dave! Rumours of a stag-do style comeback in the losers' bar…"></textarea>
+      <form class="tickform"><textarea id="tick-text" rows="2" maxlength="280" placeholder="e.g. Taxi for Dave! Rumours of a comeback are greatly exaggerated…"></textarea>
       <button class="btn primary">Post it</button></form>
       <div class="tools">${QUICK.map((q, i) => `<button class="btn small" data-action="quickTick" data-i="${i}">${esc(q.slice(0, 26))}…</button>`).join('')}</div>
       <h3>Headlines so far (${feed.length})</h3>
@@ -284,7 +284,7 @@ window.Control = (function () {
     </div>`;
   }
   const QUICK = ['🍕 FOOD IS SERVED. Pundits agree: get in there before the darts players.', '🎂 CAKE ALERT: Birthday cake in 5 minutes. Attendance is mandatory.',
-    '🍻 LAST ORDERS at the bar. Plan your hydration strategy accordingly.', '📸 Group photo in 10 minutes. Wear your best tournament face.', '🎤 SPEECHES incoming. Odds on it running long: 1/5.'];
+    '🏁 LAST CALL: if your match is up, please head to your table or oche now.', '📸 Group photo in 10 minutes. Wear your best tournament face.', '🎤 SPEECHES incoming. Odds on it running long: 1/5.'];
 
   // ------------------------------------------------------------ settings
   function renderSettings() {
@@ -299,7 +299,7 @@ window.Control = (function () {
         <label>Home nation <small>(for "wins in front of a home crowd")</small><select id="set-home" data-set="homeCountry">${countryOptions(s.homeCountry)}</select></label>
         <label>TV colour theme<select id="set-theme" data-set="theme">
           <option value="light" ${s.theme !== 'dark' ? 'selected' : ''}>Light: cream &amp; blush, like the logo</option>
-          <option value="dark" ${s.theme === 'dark' ? 'selected' : ''}>Dark: deep wine, for a dim room</option>
+          <option value="dark" ${s.theme === 'dark' ? 'selected' : ''}>Dark: deep plum, for a dim room</option>
         </select></label>
         <label>Seconds per slide<input type="number" min="3" max="120" id="set-secs" data-set="slideSeconds" value="${s.slideSeconds}"></label>
         <h3>Slides to show</h3>
@@ -318,9 +318,6 @@ window.Control = (function () {
         <p class="muted">Phones must be on the <b>same Wi-Fi</b> as this computer. Detected addresses: ${sv.lan.map((ip) => `<code>${esc(ip)}</code>`).join(', ') || '<b>none found, are you on Wi-Fi?</b>'}</p>
         <label>Override address <small>(only if the QR code doesn't work, e.g. http://192.168.1.20:${sv.port})</small>
           <input type="text" id="set-url" data-set="publicUrl" value="${esc(s.publicUrl)}" placeholder="Automatic"></label>
-        <h3>Guest Wi-Fi (shown on the QR slide and poster)</h3>
-        <label>Wi-Fi name<input type="text" id="set-wifi" data-set="wifiName" value="${esc(s.wifiName || '')}" placeholder="e.g. Club Thirty Guest"></label>
-        <label>Wi-Fi password <small>(optional: adds a "scan to join the Wi-Fi" code)</small><input type="text" id="set-wifipw" data-set="wifiPassword" value="${esc(s.wifiPassword || '')}" placeholder="Leave blank if it has none"></label>
         <p><button class="btn primary" data-action="poster">⬇ Download QR poster (JPEG)</button></p>
         <p class="hint">Make the poster on the night, once the laptop is on the party Wi-Fi: the scorer address depends on the network.</p>
 
@@ -554,11 +551,9 @@ window.Control = (function () {
     }
   }
 
-  // A4 portrait poster (150 dpi): logo, Wi-Fi details/code and the scorer code.
+  // A4 portrait poster (150 dpi): logo, instructions and the scorer code.
   async function posterDataUrl(opts = {}) {
-    const s = data.state.settings;
     const url = opts.url || data.server.scoreUrl;
-    const wifi = (s.wifiName || '').trim();
     const W = 1240;
     const H = 1754;
     const c = document.createElement('canvas');
@@ -605,16 +600,10 @@ window.Control = (function () {
         ctx.fillText(sub, 210, y + 76);
       }
     };
-    if (wifi) {
-      step(1, `Join the Wi-Fi: ${wifi}`, s.wifiPassword ? `Password: ${s.wifiPassword}  ·  or scan this code` : 'No password needed: just scan or connect');
-      drawQr(ctx, App.wifiQrText(wifi, s.wifiPassword), (W - 320) / 2, y + 110, 320);
-      y += 470;
-    } else {
-      step(1, 'Connect to the guest Wi-Fi', 'Phones must be on the same Wi-Fi as the tournament laptop');
-      y += 150;
-    }
+    step(1, 'Connect to the guest Wi-Fi', 'You need to be on it to use the scorer');
+    y += 150;
     step(2, 'Scan to open the scorer', 'Pick your match: the rules are set up for you');
-    const qs = wifi ? 440 : 640;
+    const qs = 640;
     drawQr(ctx, url, (W - qs) / 2, y + 110, qs);
     y += 110 + qs + 60;
     centre(url, y, '600 34px Montserrat, Arial', '#a84d68');

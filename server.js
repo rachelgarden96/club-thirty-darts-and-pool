@@ -96,7 +96,7 @@ function cleanPlayers(list) {
 const actions = {
   saveSettings(a) {
     const s = state.settings;
-    for (const k of ['title', 'subtitle', 'hostName', 'homeCountry', 'publicUrl', 'theme', 'bracketView', 'wifiName', 'wifiPassword']) {
+    for (const k of ['title', 'subtitle', 'hostName', 'homeCountry', 'publicUrl', 'theme', 'bracketView']) {
       if (typeof a.settings[k] === 'string') s[k] = a.settings[k].slice(0, 120);
     }
     if (a.settings.slideSeconds) s.slideSeconds = Math.min(120, Math.max(3, Number(a.settings.slideSeconds) || 10));

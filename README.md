@@ -30,10 +30,10 @@ In **🎛️ Control Room → 1. Players & tables**, for both Pool and Darts:
    - Add their **walk-on song** too, if they've chosen one. It appears under their name on the *Up Next* and *Now Playing* slides, gets a "WALK-ON WATCH" ticker line, and shows in the Control Room so whoever's on music duty can cue it. (No sound is played by the app.)
    - **📋 Paste a list** accepts one player per line, e.g. `Jamie Smith, Scotland, 1, Mr Brightside` (seed and song are optional)
    - **⇄ Copy players** copies the players from the other event.
-2. **Add tables and oches**, and rename them however you like ("The Big Table", "Oche by the Bar"…).
+2. **Add tables and oches**, and rename them however you like ("The Big Table", "Oche by the Window"…).
 3. Click **🎲 Make the draw**. Any player count works; odd numbers get byes automatically.
 
-In **⚙️ Settings & backup**, pick the **TV colour theme** (*Light*: cream and blush like the logo, or *Dark*: deep wine for a dim room), set the **birthday star's name** (for special commentary) and the **home nation** (for "wins in front of a home crowd!" lines).
+In **⚙️ Settings & backup**, pick the **TV colour theme** (*Light*: cream and blush like the logo, or *Dark*: deep plum for a dim room), set the **birthday star's name** (for special commentary) and the **home nation** (for "wins in front of a home crowd!" lines).
 
 ## On the night
 
@@ -93,7 +93,7 @@ After a match, both players can give a **post-match interview** from the phone. 
 
 **Stats Centre:** every game scored on a phone is logged (3-dart averages, highest visit, 180s, 100+ visits, checkouts, busts, balls potted and frame times). A *Stats Centre* slide and the ticker show the leaders, and the wooden spoon. Games entered only in the Control Room don't have stats.
 
-**QR poster:** in **Settings**, enter the guest Wi-Fi name (and password, if any). The QR slide then shows a "join the Wi-Fi" step and code, and **⬇ Download QR poster (JPEG)** makes a printable A4 poster. Make the poster on the night, once the laptop is on the party Wi-Fi, because the scorer address depends on the network.
+**QR poster:** **Settings → ⬇ Download QR poster (JPEG)** makes a printable A4 poster with the scorer QR code. Make it on the night, once the laptop is on the party Wi-Fi, because the scorer address depends on the network.
 
 **Bracket zoom:** by default the bracket hides rounds once they're finished, so the rest of the tournament gets bigger on the TV. To always show the whole bracket, change *Bracket view* in **Settings**.
 

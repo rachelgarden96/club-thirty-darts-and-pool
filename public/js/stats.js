@@ -108,9 +108,9 @@
     ['bestVisit', 'Highest visit', (s) => s.value, ['Big arm. Bigger ego. Fair enough.', 'The board is still recovering.']],
     ['most180', 'Most 180s', (s) => s.value, ['ONE HUNDRED AND EIGHTYYY!', 'Somebody give this person a walk-on.']],
     ['bestCheckout', 'Highest checkout', (s) => s.value, ['Ice cold. Possibly just cold. Close the window.', 'Finished in style. Then did a little dance.']],
-    ['mostTons', 'Most 100+ visits', (s) => s.value, ['Consistency is key. So is lager.', 'Ton machine.']],
+    ['mostTons', 'Most 100+ visits', (s) => s.value, ['Consistency is key. So is snacking.', 'Ton machine.']],
     ['mostBalls', 'Most balls potted', (s) => s.value, ['Clearing tables like it\'s closing time.', 'The pockets have filed a noise complaint.']],
-    ['quickestFrame', 'Quickest frame win', (s) => s.value, ['Blink and you missed it. Their opponent did.', 'In, out, back to the bar.']],
+    ['quickestFrame', 'Quickest frame win', (s) => s.value, ['Blink and you missed it. Their opponent did.', 'In, out, back to the buffet.']],
     ['longestFrame', 'Longest frame', (s) => s.value, ['We aged visibly watching this.', 'Bring a packed lunch next time.']],
     ['mostBusts', 'Most busts', (s) => s.value, ['Maths is hard. Darts maths is harder.', 'Overachiever. Just in the wrong direction.']],
     ['worstAvg', 'Wooden spoon: lowest average', (s) => s.value, ['It\'s the taking part that counts. Thank goodness.', 'Every dart a surprise. Mostly to them.']],
@@ -131,10 +131,10 @@
     if (a.worstAvg) lines.push(`WOODEN SPOON WATCH: ${n(a.worstAvg)} is averaging ${a.worstAvg.value} per visit. It's not about the winning. Clearly.`);
     if (a.bestVisit) lines.push(`HIGHEST VISIT OF THE NIGHT: ${a.bestVisit.value} from ${n(a.bestVisit)}. The oche is still shaking.`);
     if (a.most180) lines.push(`MAXIMUM WATCH: ${n(a.most180)} has hit ${a.most180.value} x 180${a.most180.value > 1 ? 's' : ''} tonight. Somebody frame that dartboard.`);
-    if (a.bestCheckout) lines.push(`BIGGEST CHECKOUT: ${n(a.bestCheckout)} took out ${a.bestCheckout.value}. Cooler than the beer fridge.`);
+    if (a.bestCheckout) lines.push(`BIGGEST CHECKOUT: ${n(a.bestCheckout)} took out ${a.bestCheckout.value}. Cooler than the ice-cream freezer.`);
     if (a.mostBusts) lines.push(`BUST LEADERBOARD: ${n(a.mostBusts)} has bust ${a.mostBusts.value} time${a.mostBusts.value > 1 ? 's' : ''}. Counting is optional, apparently.`);
     if (a.mostBalls) lines.push(`POOL STATS: ${n(a.mostBalls)} has potted ${a.mostBalls.value} balls in timed frames. A menace on the baize.`);
-    if (a.quickestFrame) lines.push(`QUICKEST FRAME: ${n(a.quickestFrame)} won in ${a.quickestFrame.value}. Didn't even let their drink go warm.`);
+    if (a.quickestFrame) lines.push(`QUICKEST FRAME: ${n(a.quickestFrame)} won in ${a.quickestFrame.value}. Didn't even let their cup of tea go cold.`);
     if (a.longestFrame) lines.push(`LONGEST FRAME: ${n(a.longestFrame)} v ${a.longestFrame.other.name} took ${a.longestFrame.value}. Seasons changed.`);
     return lines;
   }

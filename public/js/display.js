@@ -425,20 +425,14 @@ window.Display = (function () {
 
   function slideQr() {
     const url = data.server.scoreUrl;
-    const s = data.state.settings;
-    const wifi = (s.wifiName || '').trim();
-    const wifiStep = wifi
-      ? `Connect to the guest Wi-Fi: <b>${esc(wifi)}</b>${s.wifiPassword ? ` (password <b>${esc(s.wifiPassword)}</b>)` : ''}`
-      : 'Connect your phone to the <b>guest Wi-Fi</b>';
     return head('Keep <em>Score</em>', ['<span class="chip">On your phone</span>']) + `
-      <div class="slide-body"><div class="qr-wrap ${wifi ? 'with-wifi' : ''}">
-        ${wifi ? `<div class="qr-col small"><div class="qr-cap">① Join the Wi-Fi</div><div class="qr-box">${qrSvg(App.wifiQrText(wifi, s.wifiPassword))}</div></div>` : ''}
-        <div class="qr-col"><div class="qr-cap">${wifi ? '② ' : ''}Open the scorer</div><div class="qr-box">${qrSvg(url)}</div></div>
+      <div class="slide-body"><div class="qr-wrap">
+        <div class="qr-box">${qrSvg(url)}</div>
         <div class="qr-text">
           <h2>Scan me to be<br>the <em>scorer</em></h2>
           <ol>
-            <li><span>${wifiStep}</span></li>
-            <li>Scan the scorer code with your phone camera</li>
+            <li>Connect to the guest Wi-Fi</li>
+            <li>Scan with your phone camera</li>
             <li>Pick your match: the rules are set up for you</li>
             <li>Finish the game and the bracket updates itself</li>
           </ol>

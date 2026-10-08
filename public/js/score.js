@@ -553,7 +553,7 @@
     return `<div class="quotes">
       <h2>🎤 Post-match interview</h2>
       <p class="muted">Say a few words for the cameras. They'll go up on the big screen. Both optional.</p>
-      <label>${esc(g.names[w])}: winner's words<textarea id="q${w}" maxlength="140" rows="2" placeholder="e.g. I'd like to thank my cue, my mum and the bar staff">${esc(quoteDraft[w])}</textarea></label>
+      <label>${esc(g.names[w])}: winner's words<textarea id="q${w}" maxlength="140" rows="2" placeholder="e.g. I'd like to thank my cue, my mum and my lucky socks">${esc(quoteDraft[w])}</textarea></label>
       <label>${esc(g.names[l])}: any excuses? 🧂<textarea id="q${l}" maxlength="140" rows="2" placeholder="e.g. The lights were in my eyes. All of them.">${esc(quoteDraft[l])}</textarea></label>
       <button class="btn-wide red" id="sendq">📺 Put it on the big screen</button>
     </div>`;

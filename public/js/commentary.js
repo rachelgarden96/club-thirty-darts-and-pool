@@ -25,12 +25,12 @@
     'NOVELTY MARKET: Somebody blames the chalk, {o:1/10}',
     'NOVELTY MARKET: A player asks "what am I on?" at the oche, {o:1/50}',
     'NOVELTY MARKET: Somebody claims "that one was going in" when it was not, {o:1/100}',
-    'NOVELTY MARKET: A pint is spilt on the pool table, {o:5/1}',
+    'NOVELTY MARKET: Somebody leans on the pool table mid-shot and blames the floor, {o:5/1}',
     'NOVELTY MARKET: The Macarena breaks out spontaneously, {o:12/1}',
     'NOVELTY MARKET: A nine-dart finish tonight, {o:5000/1}',
     'NOVELTY MARKET: Somebody asks if bullseye is worth 100, {o:3/1}',
     'NOVELTY MARKET: A treble 20 followed immediately by three 1s, {o:Evens}',
-    'NOVELTY MARKET: A pool ball leaves the table and lands in a drink, {o:9/2}',
+    'NOVELTY MARKET: A pool ball leaves the table and rolls under the sofa, {o:9/2}',
     'NOVELTY MARKET: Somebody claims they "used to play for the county", {o:1/4}',
     'NOVELTY MARKET: A heckle about somebody\'s walk-on music, {o:1/3}',
     'NOVELTY MARKET: Somebody tries a trick shot "for the cameras", {o:2/5}',
@@ -61,7 +61,7 @@
     '"You don\'t win a game like this with your arm. You win it with your soul. And your arm, to be fair."',
     '"I would never say someone is out of form. I would, however, say they have never been in it."',
     '"Some of tonight\'s technique has been described as experimental. By me. Just now."',
-    '"Confidence is everything. That\'s why I always throw after three pints and never before."',
+    '"Confidence is everything. That\'s why I always throw after a pep talk from my nan and never before."',
     '"Big night for the sport. Small night for the dartboard\'s self-esteem."',
   ];
 
@@ -104,7 +104,7 @@
       ],
       preview: [
         'SIBLING SHOWDOWN on {V}: {A} v {B}. Decades of "they started it" settled tonight.',
-        '{A} v {B}. Blood is thicker than water, but is it thicker than a pint of lager? We\'re about to find out.',
+        '{A} v {B}. Blood is thicker than water, but is it thicker than a bowl of gravy? We\'re about to find out.',
         'THE FAMILY BUSINESS on {V}: {A} v {B}. Somebody\'s getting told about it at Sunday lunch.',
       ],
       collision: [
@@ -286,7 +286,7 @@
     'ANALYSIS: {P} on {W} v {L}: "{Wf} wanted it more. {Lf} wanted a kebab more."',
     'STAT ATTACK: {W} beat {L}. Our data team describes the performance as "yes".',
     '{P} on {L}: "The technique was there. Just not at the same time as the result."',
-    '{P} on {W}: "Composure. Poise. A suspiciously full pint they never seemed to drink."',
+    '{P} on {W}: "Composure. Poise. A suspiciously large slice of birthday cake they never seemed to eat."',
     'POST-MATCH: {L} insists they "let {Wf} win". {Wf} insists otherwise. The footage is inconclusive.',
     '{P}: "{Wf} looked like they\'d been practising. {Lf} looked like they\'d been told about it this morning."',
     'TACTICS BOARD: {W}\'s game plan against {L} was simple: hit the thing. Revolutionary stuff.',
@@ -311,7 +311,7 @@
     '{P}: "{Lf} potted the white more times than their own balls. Commitment to the bit."',
   ];
   const ROASTS_OUT = [
-    'WHERE ARE THEY NOW: {L} (knocked out of the {E}) has been spotted at the bar explaining what "really" happened.',
+    'WHERE ARE THEY NOW: {L} (knocked out of the {E}) has been spotted at the snack table explaining what "really" happened.',
     '{L} has asked for a recount in the {E}. There is nothing to recount.',
     '{L} says they were "just warming up". The {E} has ended for them.',
     'REPLAY CORNER: {L}\'s worst {E} shot has been nominated for the Turner Prize.',
@@ -333,7 +333,7 @@
       '{W} gets the job done against {L}. Not pretty. Not clever. Extremely effective.',
       '{W} beats {L}{Sx}. {L} was last seen blaming the flights, the lighting and the moon.',
       '{L} is out. Their throwing action has been referred to the health and safety team.',
-      '{W} through to the {NR}. {L} through to the bar.',
+      '{W} through to the {NR}. {L} through to the snack table.',
     ],
     pool: [
       '{W} clears up against {L}{Sx}. {L} left chalking a cue for absolutely no reason.',
@@ -353,7 +353,7 @@
     return fill(pick(role === 'winner' ? [
       '{P} on {F}\'s interview: "Classy. Humble. Slightly delusional."',
       '{P}: "Lovely words from {F}. Not rehearsed at all. Definitely not in the toilets."',
-      '{P}: "That\'s a champion\'s mindset, that. Or a fourth pint. Hard to tell."',
+      '{P}: "That\'s a champion\'s mindset, that. Or a sugar rush from the birthday cake. Hard to tell."',
       '{P}: "{F} speaks like they\'ve already got the trophy. They have not got the trophy."',
     ] : [
       '{P}: "Classic {F}. Never lost a game in their life, just been unlucky four hundred times."',
@@ -403,7 +403,7 @@
       lines.push(fill(pick([
         'BUZZER BEATER! {W} beats {L} on balls potted after the 15-minute limit. {L} ran down the clock and still lost.',
         'TIME! {W} edges past {L} on balls potted. {P}: "Slow and steady. Mostly slow."',
-        'The clock wins again: {W} goes through on balls potted, {L} goes to the bar.',
+        'The clock wins again: {W} goes through on balls potted, {L} goes to sulk by the snacks.',
       ]), vars));
     }
     if (rel) {
@@ -446,7 +446,7 @@
       main = pick([
         '{WC} beats {LC}! {W} wins the battle of the nations against {L}{Sx}.',
         'International incident: {W} of {WC} sends {LC}\'s {L} home. Diplomats are monitoring the situation.',
-        '{WC} 1, {LC} 0. {W} gets past {L} and the {WC} national anthem is being hummed, badly, at the bar.',
+        '{WC} 1, {LC} 0. {W} gets past {L} and the {WC} national anthem is being hummed, badly, in the corner.',
         'Passport control for {L}: the {LC} challenge is over. {W} marches on for {WC}.',
         '{W} puts {WC} on the map. Well, further on the map. {L} and {LC} go home.',
       ]);
@@ -502,7 +502,7 @@
         lines.push(`${pick(BOOKIES).toUpperCase()} ${ev.name.toUpperCase()} ODDS: ` +
           board.slice(0, 4).map((b, i) => `${b.player.name} ${b.odds}${i === 0 ? ' fav' : ''}`).join('  ·  '));
         const fav = board[0].player;
-        lines.push(`${pick(PUNDITS)}: "Keep an eye on ${fav.name} in the ${ev.name}. The arm action. The focus. The pint management."`);
+        lines.push(`${pick(PUNDITS)}: "Keep an eye on ${fav.name} in the ${ev.name}. The arm action. The focus. The snack management."`);
         const dark = board.find((b) => !(Number(b.player.seed) > 0) && b !== board[0]);
         if (dark) lines.push(`DARK HORSE: ${dark.player.name} (${country(dark.player.country)}) drifting at ${dark.odds} in the ${ev.name}. Don't say we didn't warn you.`);
         const streak = board.filter((b) => (d.wins[b.player.id] || 0) >= 2).sort((a, b) => (d.wins[b.player.id] || 0) - (d.wins[a.player.id] || 0))[0];
@@ -576,7 +576,7 @@
       lines.push(fill(pick([
         'FREE PLAY: {V} {is} open. Grab {kit}, no pressure. (Everybody\'s watching.)',
         '🎉 {V} {is} open for free play. Perfect time to practise that "lucky" shot you keep talking about.',
-        'FREE PLAY on {V}. {P}: "This is where legends are made. Or where people knock over drinks."',
+        'FREE PLAY on {V}. {P}: "This is where legends are made. Or where people knock over the crisps."',
       ]), { V, is: names.length > 1 ? 'are' : 'is', kit: ev.id === 'pool' ? 'a cue' : 'some darts', P: pick(PUNDITS) }));
     }
 
@@ -610,7 +610,7 @@
           `"If you're not backing ${firstName(fav.player)} at ${fav.odds}, frankly, why are you even here?"`,
           '"Hands like a surgeon. Temperament like a surgeon. Possibly is a surgeon."',
           `"I've seen ${firstName(fav.player)} warm up. I had to sit down afterwards."`,
-          '"Ice in the veins. Lager in the glass. A deadly combination."',
+          '"Ice in the veins. Steel in the wrist. A deadly combination."',
           `"${firstName(fav.player)} doesn't play the game. The game plays along with ${firstName(fav.player)}."`,
           `"Every time ${firstName(fav.player)} walks up, the room goes quiet. Partly respect, partly fear, partly the toilet queue."`,
           '"The favourite for a reason. The reason is mostly confidence, but still."',
@@ -643,10 +643,10 @@
           quote: pick([
             `"${d.wins[prom.player.id]} win${d.wins[prom.player.id] > 1 ? 's' : ''} and counting. The confidence is growing. So is the swagger."`,
             '"Raw talent. Very raw. Needs a bit more time in the oven, but the ingredients are there."',
-            `"${firstName(prom.player)} is playing like someone who has had exactly the right number of drinks."`,
+            `"${firstName(prom.player)} is playing like someone who has had exactly the right amount of birthday cake."`,
             '"You can\'t teach that. Well, you can, but it takes ages and nobody here has the patience."',
             `"${firstName(prom.player)} is peaking at exactly the right time. About forty-five minutes ago."`,
-            '"Building momentum. Building confidence. Building a slightly concerning tab at the bar."',
+            '"Building momentum. Building confidence. Building a slightly concerning pile of crisp packets."',
           ], seed + 2),
           pundit: pick(PUNDITS, seed + 5),
         });
