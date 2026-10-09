@@ -93,7 +93,7 @@ After a match, both players can give a **post-match interview** from the phone. 
 
 **Stats Centre:** every game scored on a phone is logged (3-dart averages, highest visit, 180s, 100+ visits, checkouts, busts, balls potted and frame times). A *Stats Centre* slide and the ticker show the leaders, and the wooden spoon. Games entered only in the Control Room don't have stats.
 
-**QR poster:** **Settings → ⬇ Download QR poster (PDF)** makes a printable A4 poster (there is also a JPEG option) with the scorer QR code. Make it on the night, once the laptop is on the party Wi-Fi, because the scorer address depends on the network.
+**QR poster:** **Settings → ⬇ Download QR poster (JPEG)** makes a printable A4 poster with the scorer QR code. Make it on the night, once the laptop is on the party Wi-Fi, because the scorer address depends on the network.
 
 **Bracket zoom:** by default the bracket hides rounds once they're finished, so the rest of the tournament gets bigger on the TV. To always show the whole bracket, change *Bracket view* in **Settings**.
 
