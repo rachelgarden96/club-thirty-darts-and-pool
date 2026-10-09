@@ -318,7 +318,8 @@ window.Control = (function () {
         <p class="muted">Phones must be on the <b>same Wi-Fi</b> as this computer. Detected addresses: ${sv.lan.map((ip) => `<code>${esc(ip)}</code>`).join(', ') || '<b>none found, are you on Wi-Fi?</b>'}</p>
         <label>Override address <small>(only if the QR code doesn't work, e.g. http://192.168.1.20:${sv.port})</small>
           <input type="text" id="set-url" data-set="publicUrl" value="${esc(s.publicUrl)}" placeholder="Automatic"></label>
-        <p><button class="btn primary" data-action="poster">⬇ Download QR poster (JPEG)</button></p>
+        <p><button class="btn primary" data-action="poster" data-format="pdf">⬇ Download QR poster (PDF)</button>
+          <button class="btn" data-action="poster" data-format="jpg">⬇ As a picture (JPEG)</button></p>
         <p class="hint">Make the poster on the night, once the laptop is on the party Wi-Fi: the scorer address depends on the network.</p>
 
         <h2>💾 Backup &amp; restore</h2>
@@ -497,10 +498,18 @@ window.Control = (function () {
     } else if (a === 'quickTick') {
       if (await act('addFeed', { text: QUICK[Number(b.dataset.i)] })) toast('Posted to the ticker');
     } else if (a === 'poster') {
-      const url = await posterDataUrl();
+      let url = await posterDataUrl();
+      let name = 'club-thirty-scorer-qr.jpg';
+      if (b.dataset.format === 'pdf') {
+        const bin = atob(url.split(',')[1]);
+        const jpeg = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) jpeg[i] = bin.charCodeAt(i);
+        url = URL.createObjectURL(new Blob([Pdf.jpegToA4Pdf(jpeg, 1240, 1754)], { type: 'application/pdf' }));
+        name = 'club-thirty-scorer-qr.pdf';
+      }
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'club-thirty-scorer-qr.jpg';
+      link.download = name;
       document.body.appendChild(link);
       link.click();
       link.remove();
